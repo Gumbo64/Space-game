@@ -1,0 +1,81 @@
+
+body {
+    margin:0;
+    overflow: hidden;
+} 
+input.checkbox{
+    transform: scale(3);
+}
+.scrolltop{
+    overflow-x: auto;
+    overflow-y: auto;
+    width: auto;
+    white-space: nowrap;
+}
+.noBorder {
+    border:none !important;
+}
+.scroll{
+    overflow-y: auto;
+    overflow-x: auto;
+    width: auto;
+    white-space: nowrap;w
+}
+.canvasgrid{
+    display: grid;
+    text-align: center;
+    grid-template-columns: auto 10vw;
+    grid-template-rows: 90vh;
+}
+.canvashold{
+    background-color: lightcyan;
+}
+.general{
+    background-color: lightcyan;
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+}
+.generalleft{
+    text-align: center;
+    grid-column-start: 1; 
+    grid-column-end: 2; 
+}
+.generalright{
+    text-align: center;
+    grid-column-start: 2; 
+    grid-column-end: 3; 
+}
+
+
+.allships {
+    display: grid;
+    text-align: center;
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-gap: 5px;
+    padding: 5px;
+  }
+.allshipshold{
+    background-color: rgb(255, 255, 255);
+    grid-column-start: 2; 
+    grid-column-end: 3; 
+    
+}
+.center{
+    text-align: center;
+}
+.bothships {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    padding: 5px;
+}
+
+fieldset {
+    background-color: rgb(255, 255, 255);
+    display: block;
+    border: 20px groove;
+}
+.pressable{
+    cursor: pointer;
+}

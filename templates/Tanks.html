@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!--https://closure-compiler.appspot.com/home-->
+<title>ships</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="stylesheet" href="/static/css/ships.css">
+<script defer src="/static/scripts/ships.js"></script>
+<script defer src="/static/scripts/shipsocket.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+<script src="https://cdn.jsdelivr.net/npm/reimprovejs@0/dist/reimprove.js"></script>
+</head>
+
+
+<body onload='startGame(); window.scrollTo(0, 0);'>
+    <div class='canvasgrid'>
+    <div class='canvashold'>
+    <canvas id='gamearea' height='auto' width='auto' onclick='gamearea.listeneron()'></canvas>
+    </div>
+    <div class='canvashold'>
+        <div class='center'>
+            <svg onclick="gamearea.listeneron(); startGame();window.scrollTo(0, 0);" class="pressable" width="10vw" height="10vw" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M3.17 6.706a5 5 0 017.103-3.16.5.5 0 10.454-.892A6 6 0 1013.455 5.5a.5.5 0 00-.91.417 5 5 0 11-9.375.789z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd" d="M8.147.146a.5.5 0 01.707 0l2.5 2.5a.5.5 0 010 .708l-2.5 2.5a.5.5 0 11-.707-.708L10.293 3 8.147.854a.5.5 0 010-.708z" clip-rule="evenodd"/>
+            </svg>
+            <svg onclick='gamearea.listeneron();fullscreen()' class="pressable" width="10vw" height="10vw" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" d="M1.464 10.536a.5.5 0 01.5.5v3h3a.5.5 0 010 1h-3.5a.5.5 0 01-.5-.5v-3.5a.5.5 0 01.5-.5z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd" d="M5.964 10a.5.5 0 010 .707l-4.146 4.147a.5.5 0 01-.707-.708L5.257 10a.5.5 0 01.707 0zm8.854-8.854a.5.5 0 010 .708L10.672 6a.5.5 0 01-.708-.707l4.147-4.147a.5.5 0 01.707 0z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd" d="M10.5 1.5A.5.5 0 0111 1h3.5a.5.5 0 01.5.5V5a.5.5 0 01-1 0V2h-3a.5.5 0 01-.5-.5zm4 9a.5.5 0 00-.5.5v3h-3a.5.5 0 000 1h3.5a.5.5 0 00.5-.5V11a.5.5 0 00-.5-.5z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd" d="M10 9.964a.5.5 0 000 .708l4.146 4.146a.5.5 0 00.708-.707l-4.147-4.147a.5.5 0 00-.707 0zM1.182 1.146a.5.5 0 000 .708L5.328 6a.5.5 0 00.708-.707L1.889 1.146a.5.5 0 00-.707 0z" clip-rule="evenodd"/>
+                <path fill-rule="evenodd" d="M5.5 1.5A.5.5 0 005 1H1.5a.5.5 0 00-.5.5V5a.5.5 0 001 0V2h3a.5.5 0 00.5-.5z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+    </div>
+    </div>
+
+<fieldset>
+    <h1 id='temp'>WASD + Space for Redship,Arrow keys + Shift for Blueship</h1>
+</fieldset>
+
+<img id="local" src="/static/kevinship.png" width="220" height="277" hidden>
+<img id="others" src="/static/ship.png" width="220" height="277" hidden>
+<img id="uparrow" src="/static/botharrows.png" width="220" height="277" hidden>
+<img id="shootimg" src="/static/shootbutton.png" width="220" height="277" hidden>
+
+<img id="walls" src="/static/black.png" width="220" height="277" hidden>
+<div id='AudioSpamBecauseJavascriptCantOverlapSoundsSoIHaveToCycleThroughMultiple'>
+<script>
+for (i=1;i<51;i++){
+    document.write('<audio id="explosionsfx'+i+'"><source src="/static/explosion.mp3" type="audio/mpeg"></audio>')
+}
+for (i=1;i<201;i++){
+    document.write('<audio id="hitmarker'+i+'"><source src="/static/hitmarker.mp3" type="audio/mpeg"></audio>')
+}
+for (i=1;i<201;i++){
+    document.write('<audio id="shoot'+i+'"><source src="/static/shoot.mp3" type="audio/mpeg"></audio>')
+}
+</script>
+</div>
+</div>
+<img id="redbullet" src="/static/dart.png" width="220" height="277" hidden>
+<img id="bluebullet" src="/static/dart.png" width="220" height="277" hidden>
+
+<br>
+
+<div class='general'>
+<div class='generalleft'>
+<fieldset>
+<h1>General</h1>
+<p>Separate settings for each ship</p>
+<input type="checkbox" value=true id="symmetry" class="checkbox" oninput="symmetry()">
+<p>Friction collision</p>
+<input type="checkbox" id="frictioncollision" class = "checkbox" oninput="frictioncollision = !frictioncollision">
+<p>Hold to fire</p>
+<input type="checkbox" id="holdfire" class = "checkbox" oninput="holdfire = !holdfire">
+<p>Mute Sounds</p>
+<input type="checkbox" id="nosound" class = "checkbox" oninput="nosound = !nosound">
+<p>AI mode (doesn't work rn)</p>
+<input type="checkbox" id="aimode" class = "checkbox" oninput="aimode = !aimode">
+<p>Round time in ms (ai mode only)</p>
+<input type="number" id="health" min="1" value=1600 onclick='gamearea.listeneroff()' oninput="timeoutamax = this.value">
+
+</fieldset>
+</div>
+
+<div class='generalright'>
+<fieldset>
+<h1>Textures</h1>
+<p>Red ship image</p>
+<input type="file" id="redshipinput" accept="image/*">
+<p>Red bullet image</p>
+<input type="file" id="redbulletinput" accept="image/*">
+<p>Blue ship image</p>
+<input type="file" id="blueshipinput" accept="image/*">
+<p>Blue ship image</p>
+<input type="file" id="bluebulletinput" accept="image/*">
+</fieldset>
+</div>
+</div>
+<div class="allships">
+<div class='allshipshold' id='allships'>
+<fieldset>
+<h1>Both ships</h1>
+<p>Health</p>
+<input type="number" id="health" min="1" value=4 onclick='gamearea.listeneroff()' oninput="allships('health',this.value)">
+<p>Width (%)</p>
+<input type="number" id="width" min="0" value=100 onclick='gamearea.listeneroff()' oninput="allships('width',this.value)">
+<p>Height (%)</p>
+<input type="number" id="height" min="0" value=100 onclick='gamearea.listeneroff()' oninput="allships('height',this.value)">
+<p>Speed (%)</p>
+<input type="number" id="speedmult" min="0" value=100 onclick='gamearea.listeneroff()' oninput="allships('speedmult',this.value)">
+<p>Turn speed multiplier (%)</p>
+<input type="number" id="moveanglemult" min="0" value=100 onclick='gamearea.listeneroff()' oninput="allships('moveanglemult',this.value)">
+<p>Bullet speed (%)</p>
+<input type="number" id="bulletspeed" min="0" value=100 onclick='gamearea.listeneroff()' oninput="allships('bulletspeed',this.value)">
+<p>Maximum bullets</p>
+<input type="number" id="maxbullets" min="0" value=8 onclick='gamearea.listeneroff()' oninput="allships('maxbullets',this.value)">
+<p>Fire rate (time between each shot in ms)</p>
+<input type="number" id="firerate" min="0" value=50 onclick='gamearea.listeneroff()' oninput="allships('maxbullets',this.value)">
+<p>Bullet width (%)</p>
+<input type="number" id="bulletwidth" min="0" value=60 onclick='gamearea.listeneroff()' oninput="allships('bulletwidth',this.value)">
+<p>Bullet height (%)</p>
+<input type="number" id="bulletheight" min="0" value=80 onclick='gamearea.listeneroff()' oninput="allships('bulletheight',this.value)">
+</fieldset>
+</div>
+</div>
+</div>
+<div class='bothships'>
+    <div class='redship' id='redship' hidden>
+        <fieldset>
+            <h1>Redship</h1>
+            <p>Health</p>
+            <input type="number" id="redhealth" min="1" value=4 onclick='gamearea.listeneroff()'>
+            <p>Width (%)</p>
+            <input type="number" id="redwidth" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Height (%)</p>
+            <input type="number" id="redheight" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Speed (%)</p>
+            <input type="number" id="redspeedmult" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Turn speed multiplier (%)</p>
+            <input type="number" id="redmoveanglemult" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Bullet speed (%)</p>
+            <input type="number" id="redbulletspeed" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Maximum bullets</p>
+            <input type="number" id="redmaxbullets" min="0" value=8 onclick='gamearea.listeneroff()'>
+            <p>Fire rate (time between each shot in ms)</p>
+            <input type="number" id="redfirerate" min="0" value=50 onclick='gamearea.listeneroff()'> 
+            <p>Bullet width (%)</p>
+            <input type="number" id="redbulletwidth" min="0" value=60 onclick='gamearea.listeneroff()'>
+            <p>Bullet height (%)</p>
+            <input type="number" id="redbulletheight" min="0" value=80 onclick='gamearea.listeneroff()'>
+
+
+        </fieldset>
+    </div>
+    <div class='blueship' id='blueship' hidden>
+        <fieldset>
+            <h1>Blueship</h1>
+            <p>Health</p>
+            <input type="number" id="bluehealth" min="1" value=4 onclick='gamearea.listeneroff()'>
+            <p>Width (%)</p>
+            <input type="number" id="bluewidth" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Height (%)</p>
+            <input type="number" id="blueheight" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Speed (%)</p>
+            <input type="number" id="bluespeedmult" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Turn speed multiplier (%)</p>
+            <input type="number" id="bluemoveanglemult" min=0 value=100 onclick='gamearea.listeneroff()'>
+            <p>Bullet speed (%)</p>
+            <input type="number" id="bluebulletspeed" min="0" value=100 onclick='gamearea.listeneroff()'>
+            <p>Maximum bullets</p>
+            <input type="number" id="bluemaxbullets" min="0" value=8 onclick='gamearea.listeneroff()'>
+            <p>Fire rate (time between each shot in ms)</p>
+            <input type="number" id="bluefirerate" min="0" value=50 onclick='gamearea.listeneroff()'> 
+            <p>Bullet width (%)</p>
+            <input type="number" id="bluebulletwidth" min="0" value=60 onclick='gamearea.listeneroff()'>
+            <p>Bullet height (%)</p>
+            <input type="number" id="bluebulletheight" min="0" value=80 onclick='gamearea.listeneroff()'>
+        </fieldset>
+    </div>
+</body>
+</html>

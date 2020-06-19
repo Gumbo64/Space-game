@@ -1,0 +1,85 @@
+<html>
+<link rel="icon" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwebstockreview.net%2Fexplore%2Fnotes-clipart-pencil-icon%2F&psig=AOvVaw1z3WuvuqOwbRir1Z8zlbHW&ust=1584664563039000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCIDyv96lpegCFQAAAAAdAAAAABAD">
+<script src="https://unpkg.com/hotkeys-js/dist/hotkeys.min.js"></script>
+<script type="text/javascript"></script>
+<script src="https://unpkg.com/hotkeys-js/dist/hotkeys.min.js"></script>
+<script type="text/javascript"></script>
+<head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/notes.css') }}">
+
+<title>Notes++</title>
+</head>
+<form method="POST" onsubmit="return copyContent()" action="{{ url_for('notes') }}">
+  {{ form.csrf_token }}
+<div class="grid-container">
+  <div class="notetitle">
+    <fieldset>
+      <legend>Title</legend>
+      {{ form.text3 }}
+      {{ form.text2 }}
+      <div id=overlay2>{{ title | safe  }}</div>
+       <script>
+        let titleform = document.getElementById("text2");
+        let titletype = document.getElementById("overlay2");
+        let idbox = document.getElementById("text3");
+        idbox.hidden=true;
+        idbox.value='{{ currentid | safe }}';
+        titleform.hidden = true;
+        titleform.value="";
+        titletype.hidden = false;
+        titletype.contentEditable = true;
+        
+      </script>
+    </fieldset>
+  </div>  
+  <div class="notenavigation">
+      <p><a href="{{ url_for('notes') }}">   Create a new note</a></p>
+      <script>
+      var titles = {{ notestext | safe }};
+      var ids = {{ notesids | safe }};
+      var i;
+      let texto = "";
+      for (i = 0; i < ids.length; i++) {
+        texto += "<li><a href='{{ url_for('home') }}"+"notes/"+ids[i]+"''>"+titles[i]+"</a></li> ";
+      }
+      console.log(texto);
+      document.write(texto);
+      </script>
+  </div>
+  
+  <div class="notetext">
+    <fieldset>
+      <legend>Notes</legend>
+      <!-- this is the actual textbox you type into   -->
+      
+      {{ form.text }}
+      <!-- this is the overlay thing when you click off-->
+      <div id=overlay>{{ text | safe }}</div>
+      <script>
+       
+       let text = document.getElementById("text");
+       let div = document.getElementById("overlay");
+       text.hidden = true;
+       text.value="";
+       overlay.hidden = false;
+       overlay.contentEditable = true;
+ 
+       function copyContent () {
+         document.getElementById("text").value = document.getElementById("overlay").innerHTML;
+         document.getElementById("text2").value = document.getElementById("overlay2").innerHTML;
+         return true;
+       }
+      </script>
+     </fieldset>
+     <div class="submit">
+     <p><input type="submit" value="Save"></p>
+     </div>
+     
+     
+
+    
+  </div>
+</div>
+</form>  
+</html>
+

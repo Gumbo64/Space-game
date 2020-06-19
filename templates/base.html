@@ -1,0 +1,38 @@
+<html>
+        <body>
+           
+        <header>
+          <link rel="icon" href="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwebstockreview.net%2Fexplore%2Fnotes-clipart-pencil-icon%2F&psig=AOvVaw1z3WuvuqOwbRir1Z8zlbHW&ust=1584664563039000&source=images&cd=vfe&ved=0CAIQjRxqFwoTCIDyv96lpegCFQAAAAAdAAAAABAD">
+          <title>Notes++</title>
+                
+                <div class="container">
+                        <div id="navigation">
+                        <h1 class="logo">Navigation menu</h1>
+                        <strong><nav>
+                    <ul class="menu">
+                      <li><a href="{{ url_for('home') }}">Home</a></li>
+                      <li><a href="{{ url_for('signup') }}">Sign up</a></li>
+                      <li><a href="{{ url_for('loginform') }}">Log in</a></li>
+                      <li><a href="{{ url_for('notes') }}">Notes</a></li>
+                      <li><a href="{{ url_for('ships') }}">ships</a></li>
+                      <li><a href="{{ url_for('chatroom') }}">Chatroom</a></li>
+                    </ul>
+                  </nav></strong>
+                <div id="top">
+                
+                {% block header %}{% endblock %}
+                </div>
+                <div id="text">
+                {% block text %}{% endblock %}
+                </div>
+
+                {% block image %}{% endblock %}
+
+                </div>
+                </div>
+              </header>
+           
+    </body>
+    
+
+</html>

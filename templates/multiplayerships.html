@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!--https://closure-compiler.appspot.com/home-->
+<title>ships</title>
+<script src="/static/scripts/socket.io.js"></script>
+<meta name="viewport" />
+<script>
+    const ipadress = location.origin;
+</script>
+
+<script defer src="/static/scripts/renderships.js"></script>
+<link rel="stylesheet" href="/static/css/ships.css">
+</head>
+
+
+<body onload='startGame();' class='noBorder'>
+
+<canvas id='gamearea' onclick='gamearea.listeneron()' ></canvas>
+</div>
+<img id="ships" src="/static/kevinship.png" width="220" height="277" hidden>
+<img id="client" src="/static/ship.png" width="220" height="277" hidden>
+<img id="uparrow" src="/static/botharrows.png" width="220" height="277" hidden>
+<img id="shootimg" src="/static/shootbutton.png" width="220" height="277" hidden>
+<img id="background" src="/static/slither.png" hidden>
+
+<img id="walls" src="/static/black.png" width="220" height="277" hidden>
+<img id="bullet" src="/static/realbullet.png" width="220" height="277" hidden>
+</body>
+</html>

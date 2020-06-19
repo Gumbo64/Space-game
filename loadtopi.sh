@@ -1,0 +1,1 @@
+balena login && balena push MinecraftServer --source C:\Users\chick\Desktop\Notetaker
