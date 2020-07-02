@@ -14,6 +14,7 @@ const port = 80;
 const tickrate =10;
 const io = require('socket.io')(ioport);
 const shipslogic = require('./static/scripts/shipslogic');
+const { exception } = require('console');
 
 
 nunjucks.configure( '.', {
@@ -55,12 +56,17 @@ io.on('connection', socket => {
   })
   socket.on('disconnect', () => {
     //delete workers[socket.id];
-    if (!ships[socket.id].username){
-      ships[socket.id].username='unnamed';
+    try{
+      if (!ships[socket.id].username){
+        ships[socket.id].username='unnamed';
+      }
+      delete ships[socket.id];
+      delete bullets[socket.id];
+      console.log(ships[socket.id].username,' disconnected')
+    
+    }catch(err){
+      console.log('error')
     }
-    console.log(ships[socket.id].username,' disconnected')
-    delete ships[socket.id];
-    delete bullets[socket.id];
   })
 })
 

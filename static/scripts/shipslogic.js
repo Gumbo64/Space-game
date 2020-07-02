@@ -4,8 +4,8 @@ gamewidth = 10000;
 gameheight= 10000;
 gamearea.canvas.width = gamewidth;
 gamearea.canvas.height = gameheight;
-frictioncollision=false;
-
+const frictioncollision=false;
+const maxradian = 360 * Math.PI/180;
 function shipshoot(z) {
     if (Date.now() - ships[z].lastshoot >= ships[z].firerate){
         append = new bullet(ships[z].bulletwidth,ships[z].bulletheight,ships[z].x,ships[z].y,ships[z].angle,ships[z].bulletspeed,ships[z].colour);
@@ -78,18 +78,60 @@ function bulletnewPos(z,c,othercorners) {
     }      
 }
 
+function loopangle(radian){
+    if (radian < 0){
+        positivecheck = -1;
+    }else{
+        positivecheck = 1;
+    }
+    let newradian = ((radian*positivecheck) % maxradian)*positivecheck;
+    // console.log(newradian)
+    if (newradian<0){
+        newradian = maxradian - Math.abs(newradian);
+        console.log(newradian)
+    }
+    return newradian;
+}
+
+
 function shipnewPos(z) {
     if (ships[z].health <= 0){
         ships[z].x = -99999999;
         ships[z].y = -99999999;
         return 'ded';
     }
-
-
-    ships[z].totalangle += ships[z].controlangle * ships[z].moveanglemult * Math.PI / 180;
-    
-
     ships[z].totalspeed += ships[z].controlspeed;
+    ships[z].totalangle += ships[z].controlangle * ships[z].moveanglemult * Math.PI / 180;
+    ships[z].totalangle = loopangle(ships[z].totalangle);
+    ships[z].momentumangle = loopangle(ships[z].momentumangle);
+
+    midratio = ships[z].controlspeed/(ships[z].controlspeed+ships[z].totalspeed);
+
+    if (isNaN(midratio)){
+        // console.log(isNaN(midratio))
+        midratio = 0;
+        // console.log('d')
+    }
+    if (ships[z].totalangle < ships[z].momentumangle){
+        // console.log(midratio)
+        midratio = 1-midratio;
+    }
+    // console.log(midratio)
+    // 
+
+
+    if (Math.abs(ships[z].momentumangle-ships[z].totalangle)>=maxradian/2){
+        let difference =  Math.abs((ships[z].momentumangle)-(ships[z].totalangle))
+        ships[z].momentumangle = Math.min((ships[z].momentumangle),(ships[z].totalangle))+difference*midratio;
+    }else{
+        let difference = maxradian - Math.abs((ships[z].momentumangle)-(ships[z].totalangle))
+        ships[z].momentumangle = Math.max((ships[z].momentumangle),(ships[z].totalangle))+difference*midratio;
+    }
+    
+    // console.log([ships[z].momentumangle,ships[z].totalangle]);
+    // ships[z].momentumangle -= angleadd;
+    ships[z].momentumangle = loopangle(ships[z].momentumangle);
+    // console.log(ships[z].momentumangle)
     if(ships[z].slowdown){
         let slowdownspeed = 0.006;
         if(ships[z].totalspeed<0){
@@ -117,8 +159,8 @@ function shipnewPos(z) {
 
 
 
-    ships[z].x += ships[z].speedmult * ships[z].totalspeed * Math.sin(ships[z].totalangle);
-    ships[z].y -= ships[z].speedmult * ships[z].totalspeed * Math.cos(ships[z].totalangle);
+    ships[z].x += ships[z].speedmult * ships[z].totalspeed * Math.sin(ships[z].momentumangle);
+    ships[z].y -= ships[z].speedmult * ships[z].totalspeed * Math.cos(ships[z].momentumangle);
     var ourcorners = shipcorners(z);
     var othercorners = shipothercorners(z);
     var i;
@@ -183,29 +225,24 @@ function shipnewPos(z) {
     Collision with walls at edge of map
     */
     var i;
-    
+    // ships[z].y -= 100;
     for (i = 0; i < ourcorners.length; i++) {
         if (ourcorners[i].x > gamearea.canvas.width){
-            // ships[z].x = gamearea.canvas.width-(ourcorners[i].x-ships[z].x);
-            // ships[z].totalspeed/=2
+            ships[z].x = gamearea.canvas.width-(ourcorners[i].x-ships[z].x);
+            ships[z].totalspeed/=2
         
         }
         if (ourcorners[i].x < 0) {
-            // ships[z].x = ships[z].x-ourcorners[i].x;
-            // ships[z].totalspeed/=2
-         
+            ships[z].x = ships[z].x-ourcorners[i].x;
+            ships[z].totalspeed/=2
         }
         if (ourcorners[i].y > gamearea.canvas.height){
-            // ships[z].y = gamearea.canvas.height-(ourcorners[i].y-ships[z].y);
-            // ships[z].totalspeed/=2
-          
+            ships[z].y = gamearea.canvas.height-(ourcorners[i].y-ships[z].y);
+            ships[z].totalspeed/=2
         }
-        
-
         if (ourcorners[i].y < 0) {
-            // ships[z].y = ships[z].y-ourcorners[i].y;
-            // ships[z].totalspeed/=2
-           
+            ships[z].y = ships[z].y-ourcorners[i].y;
+            ships[z].totalspeed/=2
         }
     
     }
@@ -243,7 +280,8 @@ exports.updateGameArea = function() {
                 }
             }
             if (shoot){
-                shipshoot(i);
+                ships[i].totalspeed = 0;
+                ships[i].controlspeed = 0
             }
             updateshipsbullets(i,ships[i].maxbullets)
             shipnewPos(i);
@@ -268,12 +306,12 @@ exports.makeship = function(x, y, colour,username) {
     this.totalangle = 0;
     this.totalspeed=0;
 
-
+    this.momentumangle = 0;
 
     this.controlangle = 0;
     this.controlspeed = 0;
 
-    this.terminalvelocity = Infinity;
+    this.terminalvelocity = 5;
     
     this.x = x;
     this.y = y;

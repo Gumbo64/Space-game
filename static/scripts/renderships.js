@@ -1,3 +1,4 @@
+
 // const { render } = require("nunjucks");
 
 port = ipadress + ":1569";
@@ -85,6 +86,18 @@ function wiper() {
     ctx.setTransform(1, 0, 0, 1, 0, 0); // sets scale && origin
     ctx.drawImage(shipimg, width / -2, height / -2, width, height);
 }
+function oldbackground() {
+    var ctx = gamearea.context;
+    height = (10000 + 1000);
+    width = (10000 + 1100);
+    var shipimg = document.getElementById('background');
+    for (i=0;i<Math.ceil(width/(shipimg.width*(scale/100)));i++){
+        for (j=0;j<Math.ceil(height/(shipimg.height*(scale/100)));j++){
+            ctx.setTransform(1, 0, 0, 1, (scale/100)*(i*shipimg.width-clientshipx), (scale/100)*(j*shipimg.height-clientshipy)); // sets scale && origin
+            ctx.drawImage(shipimg,0, 0, shipimg.width*(scale/100),shipimg.height*(scale/100));
+        }
+    }
+}
 function background() {
     var ctx = gamearea.context;
     var shipimg = document.getElementById('background');
@@ -127,11 +140,29 @@ function background() {
         }
     }
 }
+function momentumarrow(){
+    arrowangle = ships[clientname].momentumangle;
+    arrowx = centerx;
+    arrowy = centery;
+    var ctx = gamearea.context;
+    img = document.getElementById('uparrow')
+    // console.log(arrowx)
+    arrowx += 100 * Math.sin(arrowangle);
+    arrowy -= 100 * Math.cos(arrowangle);
+    // console.log(arrowx)
+    ctx.setTransform(1, 0, 0, 1, arrowx, arrowy); // sets scale && origin
+    ctx.rotate(arrowangle);
+    width = 80;
+    height = 100;
+    ctx.drawImage(img, width / -2,height / -2, width,height);
+
+}
 function rendergamearea(){
     clientshipx=ships[clientname].x;
     clientshipy=ships[clientname].y;
     gamearea.clear();
     background();
+    oldbackground();
     for (var key in ships) {
         // check if the property/key is defined in the object itself, not in parent
         if (ships.hasOwnProperty(key)) {    
@@ -145,6 +176,7 @@ function rendergamearea(){
     }
     
     wiper();
+    momentumarrow();
     
 }
 
