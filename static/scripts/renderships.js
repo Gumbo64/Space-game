@@ -60,14 +60,15 @@ function scrollhandle(delta){
     }
 }
 
-function scaledraw(item,img){
+function scaledraw(x,y,width,height,img){
     var ctx = gamearea.context;
-    img.width=item.width;
-    img.height=item.height;
+    img.width=width;
+    img.height=height;
     
-    ctx.setTransform(1, 0, 0, 1, (item.x-clientshipx)*(scale/100)+centerx, (item.y-clientshipy)*(scale/100)+centery); // sets scale && origin
-    ctx.rotate(item.totalangle);
-    ctx.drawImage(img, item.width*(scale/100) / -2, item.height*(scale/100) / -2, item.width*(scale/100), item.height*(scale/100));
+
+    ctx.setTransform(1, 0, 0, 1, (x-clientshipx)*(scale/100)+centerx, (y-clientshipy)*(scale/100)+centery); // sets scale && origin
+    ctx.rotate(totalangle);
+    ctx.drawImage(img, width*(scale/100) / -2, height*(scale/100) / -2, width*(scale/100), height*(scale/100));
 }
 function rendership(ship) {
     if (ship.colour == clientname){
@@ -141,7 +142,9 @@ function background() {
     }
 }
 function momentumarrow(){
-    arrowangle = ships[clientname].momentumangle;
+    arrowangle =  Math.atan2(-ships[clientname].mY, ships[clientname].mX);
+    arrowangle = arrowangle + 1.5708;
+    // console.log(arrowangle);
     arrowx = centerx;
     arrowy = centery;
     var ctx = gamearea.context;
@@ -234,7 +237,7 @@ function startGame() {
         username = 'unnamed';
     }
     username = truncate(username,40)
-    socket.emit('new-user',username);
+    socket.emit('new-user',username,{0:{0:1},1:{0:1}});
     backgroundcolour = '#ffffff';
     bullets = {};
     ships = {};

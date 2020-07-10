@@ -14,7 +14,7 @@ const port = 80;
 const tickrate =10;
 const io = require('socket.io')(ioport);
 const shipslogic = require('./static/scripts/shipslogic');
-const { exception } = require('console');
+// const { exception } = require('console');
 
 
 nunjucks.configure( '.', {
@@ -39,10 +39,10 @@ function truncate(str, n){
   return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
 };
 io.on('connection', socket => {
-  socket.on('new-user', (username) => {
-    username = truncate(username,40);
+  socket.on('new-user', (username,structure) => {
+    
     socket.emit('identifier',socket.id);
-    handleNew(socket.id,username);
+    handleNew(socket.id,username,structure);
   })
   socket.on('staterequest', (inputis) => {
     socket.emit('states',ships,bullets);
@@ -50,7 +50,7 @@ io.on('connection', socket => {
       ships[socket.id].input=inputis; 
     } catch (error) {
       socket.emit('identifier',socket.id);
-      handleNew(socket.id,'unnamed');
+      handleNew(socket.id,'unnamed',{});
     }
     
   })
@@ -156,10 +156,10 @@ function threadreturn(result){
   })
 }
 
-function handleNew(id,username){
+function handleNew(id,username,structure){
   // ships[id] = new shipslogic.makeship(Math.round(Math.random()*gamewidth),Math.round(Math.random()*gameheight),id,username);
-  ships[id] = new shipslogic.makeship(0,0,id,username);
-  
+  username = truncate(username,40);
+  ships[id] = new shipslogic.makeship(0,0,id,username,structure);
   console.log(username,' joined');
 }
 
