@@ -41,7 +41,7 @@ function rendershipsbullets(colour) {
 }
 function renderonebullet(bullet){
     var bulletimg = document.getElementById('bullet');
-    scaledraw(bullet,bulletimg)
+    scaledraw(bullet.x,bullet.y,bullet.width,bullet.height,bulletimg)
  
     
 }
@@ -59,15 +59,40 @@ function scrollhandle(delta){
         }
     }
 }
+function rotate(cx, cy, x, y, angle) {
+    var radians = angle,
+        cos = Math.cos(radians),
+        sin = Math.sin(radians),
+        nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
+        ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+    return [nx, ny];
+}
 
-function scaledraw(x,y,width,height,img){
+function shipdraw(ship,shipimage){
+    st = ship.structure;
+    for (var x in st) {
+        if (st.hasOwnProperty(x)) {
+            for (var y in st[x]) {
+                if (st[x].hasOwnProperty(y)) {
+
+                    ans = rotate(ship.x,ship.y,ship.x + x * ship.width,ship.y - y * ship.height,-ship.totalangle)
+                    partx = ans[0];
+                    party = ans[1];
+                    // partx = ship.x + x * ship.width * Math.sin(ship.totalangle);
+                    // party = ship.y - y * ship.height * Math.cos(ship.totalangle);
+                    scaledraw(partx,party,ship.width,ship.height,ship.totalangle,shipimage);
+                }
+            }
+        }
+    }
+}
+
+function scaledraw(x,y,width,height,angle,img){
     var ctx = gamearea.context;
     img.width=width;
     img.height=height;
-    
-
     ctx.setTransform(1, 0, 0, 1, (x-clientshipx)*(scale/100)+centerx, (y-clientshipy)*(scale/100)+centery); // sets scale && origin
-    ctx.rotate(totalangle);
+    ctx.rotate(angle);
     ctx.drawImage(img, width*(scale/100) / -2, height*(scale/100) / -2, width*(scale/100), height*(scale/100));
 }
 function rendership(ship) {
@@ -77,7 +102,7 @@ function rendership(ship) {
     }else{
         var shipimg = document.getElementById('ships');
     }
-    scaledraw(ship,shipimg);
+    shipdraw(ship,shipimg);
 }
 function wiper() {
     var ctx = gamearea.context;
@@ -237,7 +262,13 @@ function startGame() {
         username = 'unnamed';
     }
     username = truncate(username,40)
-    socket.emit('new-user',username,{0:{0:1},1:{0:1}});
+    // structure
+    socket.emit('new-user',username,{0:{0:1,1:'bullet',2:1},
+                                     1:{0:1,1:'fuel',2:1},
+                                     2:{0:1,1:1,2:1}
+                                    
+                                    
+                                    });
     backgroundcolour = '#ffffff';
     bullets = {};
     ships = {};
