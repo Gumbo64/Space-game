@@ -31,6 +31,7 @@ range = 3
         // the end of the table row
             var cell = document.createElement("td");
             var selectList = document.createElement("select");
+            selectList.setAttribute("class", "x"+j + " y"+-i);
             // selectList.setAttribute("id", "mySelect");
             for (var k = 0; k < array.length; k++) {
                 var option = document.createElement("option");
@@ -122,14 +123,15 @@ function shipdraw(key){
         if (st.hasOwnProperty(x)) {
             for (var y in st[x]) {
                 if (st[x].hasOwnProperty(y)) {
-
-                    ans = rotate(ship.x,ship.y,ship.x + x * ship.width,ship.y - y * ship.height,-ship.totalangle)
-                    partx = ans[0];
-                    party = ans[1];
-                    shipimage = document.getElementById(structures[ship.colour][x][y]);
-                    // partx = ship.x + x * ship.width * Math.sin(ship.totalangle);
-                    // party = ship.y - y * ship.height * Math.cos(ship.totalangle);
-                    scaledraw(partx,party,ship.width,ship.height,ship.totalangle,shipimage);
+                    if (st[x][y]!='none'){
+                        ans = rotate(ship.x,ship.y,ship.x + x * ship.width,ship.y - y * ship.height,-ship.totalangle)
+                        partx = ans[0];
+                        party = ans[1];
+                        shipimage = document.getElementById(structures[ship.colour][x][y]);
+                        // partx = ship.x + x * ship.width * Math.sin(ship.totalangle);
+                        // party = ship.y - y * ship.height * Math.cos(ship.totalangle);
+                        scaledraw(partx,party,ship.width,ship.height,ship.totalangle,shipimage);
+                    }
                 }
             }
         }
@@ -303,13 +305,17 @@ function startGame() {
         username = 'unnamed';
     }
     username = truncate(username,40)
+
+    structure = {};
+    for (i=-range;i<range+1;i++){
+        structure[i] = {};
+        for (j=-range;j<range+1;j++){
+            structure[i][j]=document.getElementsByClassName("x"+i+" y"+j)[0].value;
+            console.log(structure[i][j]);
+        }
+    }
     // structure
-    socket.emit('new-user',username,{"-1":{'-1':'fuel',0:'bullet',1:'fuel'},
-                                     0:{'-1':'bullet',0:'fuel',1:'bullet'},
-                                     1:{'-1':'bullet',0:'fuel',1:'bullet'}
-                                    
-                                    
-                                    });
+    socket.emit('new-user',username,structure);
     backgroundcolour = '#ffffff';
     bullets = {};
     ships = {};
