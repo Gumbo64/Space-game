@@ -24,17 +24,18 @@ nunjucks.configure( '.', {
 
 inputs = {};
 ships = {};
-bullets = {};
+structures = {};
+// bullets = {};
+
 // gamearea = {};
 // gamearea['canvas']={};
 // gamewidth = 1000;
 // gameheight= 1000;
 // gamearea.canvas.width = gamewidth;
 // gamearea.canvas.height = gameheight;
-workers = {};
+
 app.set('view engine', 'nunjucks')
 app.use('/static', express.static('static'))
-bullets = {}
 function truncate(str, n){
   return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
 };
@@ -45,7 +46,7 @@ io.on('connection', socket => {
     handleNew(socket.id,username,structure);
   })
   socket.on('staterequest', (inputis) => {
-    socket.emit('states',ships,bullets);
+    socket.emit('states',ships,structures);
     try {
       ships[socket.id].input=inputis; 
     } catch (error) {
@@ -159,7 +160,8 @@ function threadreturn(result){
 function handleNew(id,username,structure){
   // ships[id] = new shipslogic.makeship(Math.round(Math.random()*gamewidth),Math.round(Math.random()*gameheight),id,username);
   username = truncate(username,40);
-  ships[id] = new shipslogic.makeship(0,0,id,username,structure);
+  ships[id] = new shipslogic.makeship(0,0,id,username);
+  structures[id]=structure;
   console.log(username,' joined');
 }
 

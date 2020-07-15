@@ -6,8 +6,55 @@ const socket = io(port)
 touchcontrols = false;
 touching = false;
 ships = {};
-bullets = {};
+structures = {};
+// bullets = {};
 scale = 70;
+range = 3
+    var array = ["none","bullet","wall","fuel"];
+    var table = document.getElementById('buildtable');   
+
+    // get the reference for the body
+    var body = document.getElementById('settings');
+
+    // creates a <table> element and a <tbody> element
+    var tbl = document.createElement("table");
+    var tblBody = document.createElement("tbody");
+
+    // creating all cells
+    for (var i = -range; i < range+1; i++) {
+        // creates a table row
+        var row = document.createElement("tr");
+
+        for (var j = -range; j < range+1; j++) {
+        // Create a <td> element and a text node, make the text
+        // node the contents of the <td>, and put the <td> at
+        // the end of the table row
+            var cell = document.createElement("td");
+            var selectList = document.createElement("select");
+            // selectList.setAttribute("id", "mySelect");
+            for (var k = 0; k < array.length; k++) {
+                var option = document.createElement("option");
+                option.setAttribute("value", array[k]);
+                option.text = array[k];
+                selectList.appendChild(option);
+            }
+
+            cell.appendChild(selectList);
+            row.appendChild(cell);
+        }
+
+        // add the row to the end of the table body
+        tblBody.appendChild(row);
+    }
+
+    // put the <tbody> in the <table>
+    tbl.appendChild(tblBody);
+    // appends <table> into <body>
+    body.appendChild(tbl);
+    // sets the border attribute of tbl to 2;
+    tbl.setAttribute("border", "2");
+    tbl.setAttribute("id", "buildtable");
+    
 
 
 var events;
@@ -26,9 +73,9 @@ function getstates(){
     inputs = [left,right,up,down,shoot];
     socket.emit('staterequest',inputs);
 }
-socket.on('states', (shipsstate,bulletsstate) => {
+socket.on('states', (shipsstate,newstructures) => {
     ships = shipsstate;
-    bullets = bulletsstate;
+    structures = newstructures;
 })
   
 socket.on('identifier', (socketid) => {
@@ -68,8 +115,9 @@ function rotate(cx, cy, x, y, angle) {
     return [nx, ny];
 }
 
-function shipdraw(ship,shipimage){
-    st = ship.structure;
+function shipdraw(key){
+    st = structures[key];
+    ship = ships[key];
     for (var x in st) {
         if (st.hasOwnProperty(x)) {
             for (var y in st[x]) {
@@ -78,6 +126,7 @@ function shipdraw(ship,shipimage){
                     ans = rotate(ship.x,ship.y,ship.x + x * ship.width,ship.y - y * ship.height,-ship.totalangle)
                     partx = ans[0];
                     party = ans[1];
+                    shipimage = document.getElementById(structures[ship.colour][x][y]);
                     // partx = ship.x + x * ship.width * Math.sin(ship.totalangle);
                     // party = ship.y - y * ship.height * Math.cos(ship.totalangle);
                     scaledraw(partx,party,ship.width,ship.height,ship.totalangle,shipimage);
@@ -95,15 +144,7 @@ function scaledraw(x,y,width,height,angle,img){
     ctx.rotate(angle);
     ctx.drawImage(img, width*(scale/100) / -2, height*(scale/100) / -2, width*(scale/100), height*(scale/100));
 }
-function rendership(ship) {
-    if (ship.colour == clientname){
-        var shipimg = document.getElementById('client');
-        //window.scrollTo(ship.x-ship.width*7,ship.y-ship.height*7);
-    }else{
-        var shipimg = document.getElementById('ships');
-    }
-    shipdraw(ship,shipimg);
-}
+
 function wiper() {
     var ctx = gamearea.context;
     height = 0;
@@ -195,9 +236,9 @@ function rendergamearea(){
         // check if the property/key is defined in the object itself, not in parent
         if (ships.hasOwnProperty(key)) {    
                 
-            rendershipsbullets(key);
-            rendership(ships[key]);
-            drawhealthname(key);  
+            // rendershipsbullets(key);
+            shipdraw(key);
+            drawhealthname(key);
             
         }
         
@@ -257,15 +298,15 @@ function truncate(str, n){
     return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   };
 function startGame() {
-    username = prompt('Username?');
+    username = document.getElementById('usernamebox').value;
     if (!username){
         username = 'unnamed';
     }
     username = truncate(username,40)
     // structure
-    socket.emit('new-user',username,{0:{0:1,1:'bullet',2:1},
-                                     1:{0:1,1:'fuel',2:1},
-                                     2:{0:1,1:1,2:1}
+    socket.emit('new-user',username,{"-1":{'-1':'fuel',0:'bullet',1:'fuel'},
+                                     0:{'-1':'bullet',0:'fuel',1:'bullet'},
+                                     1:{'-1':'bullet',0:'fuel',1:'bullet'}
                                     
                                     
                                     });
@@ -303,6 +344,8 @@ function scrollfunction(e){
 var gamearea = {
     canvas : document.getElementById("gamearea"),
     canvasstart : function() {
+        document.getElementById('settings').hidden = true;
+        this.canvas.hidden = false;
         this.canvas.width  = window.innerWidth;
         this.canvas.height = window.innerHeight;
     },

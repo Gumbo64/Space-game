@@ -235,7 +235,7 @@ function shipnewPos(z) {
 exports.updateGameArea = function() {
     for (var i in ships) {
         if (ships.hasOwnProperty(i)) {  
-            updateshipsbullets(i,ships[i].maxbullets)
+            // updateshipsbullets(i,ships[i].maxbullets)
             shipnewPos(i);
         }
     }
@@ -245,14 +245,13 @@ exports.updateGameArea = function() {
     
 
 // }
-exports.makeship = function(x, y, colour,username,structure) {
+exports.makeship = function(x, y, colour,username) {
     this.username = username;
     this.lastshoot = Date.now();
     this.input = [false,false,false,false,false];
     // [false,false,false,false,false]
     this.colour = colour;
-    this.structure = structure;
-    bullets[colour]=[];
+    // bullets[colour]=[];
     this.height=50;
     this.width=50;
     this.health=4;

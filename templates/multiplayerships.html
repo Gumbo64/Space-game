@@ -3,6 +3,7 @@
 <head>
 <!--https://closure-compiler.appspot.com/home-->
 <title>ships</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"/>
 <script src="/static/scripts/socket.io.js"></script>
 <meta name="viewport" />
 <script>
@@ -14,11 +15,17 @@
 </head>
 
 
-<body onload='startGame();' class='noBorder'>
+<body class='noBorder'>
+<div id="settings">
+<button id = "startbutton" onclick='startGame();'>Start!</button>
+<br>
+<p>Username</p><input id='usernamebox' type="text">
 
-<canvas id='gamearea' onclick='gamearea.listeneron();fullscreen();' ></canvas>
+</div>
+<canvas hidden id='gamearea' onclick='gamearea.listeneron();fullscreen();' ></canvas>
 </div>
 <img id="ships" src="/static/kevinship.png" width="220" height="277" hidden>
+<img id="fuel" src="/static/fuel.jpg" width="220" height="277" hidden>
 <img id="client" src="/static/ship.png" width="220" height="277" hidden>
 <img id="uparrow" src="/static/uparrow.png" width="220" height="277" hidden>
 <img id="shootimg" src="/static/shootbutton.png" width="220" height="277" hidden>
