@@ -91,7 +91,6 @@ function shipnewPos(z) {
     up=actions[2];
     down=actions[3];
     shoot=actions[4];
-    slowdown = false;
 
     if (up){
         ships[z].mX += Math.sin(ships[z].totalangle)*0.01;
@@ -102,8 +101,30 @@ function shipnewPos(z) {
     }else if(right){
         ships[z].totalangle += ships[z].moveanglemult * Math.PI / 180;
     }
+    if (shoot){
+        ships[z].x = 0;
+        ships[z].y = 0;
+        ships[z].mX = 0;
+        ships[z].mY = 0;
+    }
+
+    for (i=0;i<planets.length;i++){
+        let direction = Math.atan2(planets[i].y-ships[z].y,planets[i].x-ships[z].x)+1.5708;
+        // console.log(direction);
+        let distance = Math.hypot(planets[i].x-ships[z].x,planets[i].y-ships[z].y)
+        // console.log(distance)
+        
+        let force = planets[i].m / (distance^2);
+        // console.log([force,distance,direction]);
+        if(isFinite(force) && !isNaN(distance) && !isNaN(direction)){
+            ships[z].mX += Math.sin(direction) * force;
+	        ships[z].mY += Math.cos(direction) * force;
+        }
+        
+    }
     
-    let slowdownspeed = 0.0006;
+    // let slowdownspeed = 0.0006;
+    let slowdownspeed = 0;
     if(ships[z].mX<0){
         ships[z].mX+= slowdownspeed;
         if (ships[z].mX > 0){
@@ -206,28 +227,28 @@ function shipnewPos(z) {
     /*
     Collision with walls at edge of map
     */
-    var i;
+    // var i;
     // ships[z].y -= 100;
-    for (i = 0; i < ourcorners.length; i++) {
-        if (ourcorners[i].x > gamearea.canvas.width){
-            ships[z].x = gamearea.canvas.width-(ourcorners[i].x-ships[z].x);
-            ships[z].mX=0;
+    // for (i = 0; i < ourcorners.length; i++) {
+    //     if (ourcorners[i].x > gamearea.canvas.width){
+    //         ships[z].x = gamearea.canvas.width-(ourcorners[i].x-ships[z].x);
+    //         ships[z].mX=0;
         
-        }
-        if (ourcorners[i].x < 0) {
-            ships[z].x = ships[z].x-ourcorners[i].x;
-            ships[z].mX=0;
-        }
-        if (ourcorners[i].y > gamearea.canvas.height){
-            ships[z].y = gamearea.canvas.height-(ourcorners[i].y-ships[z].y);
-            ships[z].mY=0;
-        }
-        if (ourcorners[i].y < 0) {
-            ships[z].y = ships[z].y-ourcorners[i].y;
-            ships[z].mY=0;
-        }
+    //     }
+    //     if (ourcorners[i].x < 0) {
+    //         ships[z].x = ships[z].x-ourcorners[i].x;
+    //         ships[z].mX=0;
+    //     }
+    //     if (ourcorners[i].y > gamearea.canvas.height){
+    //         ships[z].y = gamearea.canvas.height-(ourcorners[i].y-ships[z].y);
+    //         ships[z].mY=0;
+    //     }
+    //     if (ourcorners[i].y < 0) {
+    //         ships[z].y = ships[z].y-ourcorners[i].y;
+    //         ships[z].mY=0;
+    //     }
     
-    }
+    // }
     
     
 }

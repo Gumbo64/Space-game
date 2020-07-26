@@ -78,6 +78,10 @@ socket.on('states', (shipsstate,newstructures) => {
     ships = shipsstate;
     structures = newstructures;
 })
+socket.on('planets', (newplanets) => {
+    planets = newplanets;
+})
+
   
 socket.on('identifier', (socketid) => {
   clientname = socketid;
@@ -92,6 +96,22 @@ function renderonebullet(bullet){
     scaledraw(bullet.x,bullet.y,bullet.width,bullet.height,bulletimg)
  
     
+}
+
+
+function planetdraw(planet){
+    var context = gamearea.context;
+    var x = (planet.x-clientshipx)*(scale/100)+centerx;
+    var y = (planet.y-clientshipy)*(scale/100)+centery;
+    var radius = planet.r * scale/100;
+    // context.rotate(ships[clientname].totalangle);
+    context.beginPath();
+    context.arc(x, y, radius, 0, 2 * Math.PI, false);
+    context.fillStyle = 'green';
+    context.fill();
+    context.lineWidth = 5;
+    context.strokeStyle = '#003300';
+    context.stroke();
 }
 function scrollhandle(delta){
     if(delta>0){
@@ -120,20 +140,18 @@ function shipdraw(key){
     st = structures[key];
     ship = ships[key];
     for (var x in st) {
-        if (st.hasOwnProperty(x)) {
+        if (st.hasOwnProperty(x)) {  
             for (var y in st[x]) {
-                if (st[x].hasOwnProperty(y)) {
-                    if (st[x][y]!='none'){
+                if (st[x].hasOwnProperty(y)) {  
+                    if (typeof st[0][0] !== 'undefined' && st[x][y]!='none'){
                         ans = rotate(ship.x,ship.y,ship.x + x * ship.width,ship.y - y * ship.height,-ship.totalangle)
                         partx = ans[0];
                         party = ans[1];
                         shipimage = document.getElementById(structures[ship.colour][x][y]);
-                        // partx = ship.x + x * ship.width * Math.sin(ship.totalangle);
-                        // party = ship.y - y * ship.height * Math.cos(ship.totalangle);
                         scaledraw(partx,party,ship.width,ship.height,ship.totalangle,shipimage);
                     }
                 }
-            }
+            }   
         }
     }
 }
@@ -233,20 +251,27 @@ function rendergamearea(){
     clientshipy=ships[clientname].y;
     gamearea.clear();
     background();
-    oldbackground();
+    // oldbackground();
     for (var key in ships) {
         // check if the property/key is defined in the object itself, not in parent
         if (ships.hasOwnProperty(key)) {    
-                
+            if(key != clientname){
+                shipdraw(key);
+                drawhealthname(key);
+            }
             // rendershipsbullets(key);
-            shipdraw(key);
-            drawhealthname(key);
+            
             
         }
         
     }
-    
+    shipdraw(clientname);
+    drawhealthname(clientname);
     wiper();
+    for (i=0;i<planets.length;i++){
+        planetdraw(planets[i]);
+    }
+    
     momentumarrow();
     
 }

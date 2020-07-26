@@ -14,6 +14,7 @@ const port = 80;
 const tickrate =10;
 const io = require('socket.io')(ioport);
 const shipslogic = require('./static/scripts/shipslogic');
+const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 // const { exception } = require('console');
 
 
@@ -25,6 +26,8 @@ nunjucks.configure( '.', {
 inputs = {};
 ships = {};
 structures = {};
+planets = [{'x':1000,'y':1000,'m':5,'r':200},
+           {'x':2000,'y':1000,'m':5,'r':200}];
 // bullets = {};
 
 // gamearea = {};
@@ -43,6 +46,7 @@ io.on('connection', socket => {
   socket.on('new-user', (username,structure) => {
     
     socket.emit('identifier',socket.id);
+    socket.emit('planets',planets);
     handleNew(socket.id,username,structure);
   })
   socket.on('staterequest', (inputis) => {
@@ -51,7 +55,8 @@ io.on('connection', socket => {
       ships[socket.id].input=inputis; 
     } catch (error) {
       socket.emit('identifier',socket.id);
-      handleNew(socket.id,'unnamed',{});
+      socket.emit('planets',planets);
+      handleNew(socket.id,'unnamed');
     }
     
   })
@@ -160,7 +165,7 @@ function threadreturn(result){
 function handleNew(id,username,structure){
   // ships[id] = new shipslogic.makeship(Math.round(Math.random()*gamewidth),Math.round(Math.random()*gameheight),id,username);
   username = truncate(username,40);
-  ships[id] = new shipslogic.makeship(0,0,id,username);
+  ships[id] = new shipslogic.makeship(1000,1000,id,username);
   structures[id]=structure;
   console.log(username,' joined');
 }
