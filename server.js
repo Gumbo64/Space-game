@@ -26,7 +26,7 @@ nunjucks.configure( '.', {
 inputs = {};
 ships = {};
 structures = {};
-planets = [{'x':1000,'y':1000,'m':5,'r':200},
+planets = [{'x':1000,'y':1000,'m':20,'r':500},
            {'x':2000,'y':1000,'m':5,'r':200}];
 // bullets = {};
 

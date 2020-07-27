@@ -191,10 +191,10 @@ function shipnewPos(z) {
                 if (doIntersect(ourcorners[i],ourcorners[nexti],othercorners[j][k],othercorners[j][nextk])){
                     if (frictioncollision){
                         ships[z].angle -= ships[z].moveAngle * Math.PI / 180;
-                        ships[z].x -= ships[z].speedmult * ships[z].speed * Math.sin(ships[z].angle);
-                        ships[z].y += ships[z].speedmult * ships[z].speed * Math.cos(ships[z].angle);
+                        ships[z].x -= ships[z].speedmult * ships[z].totalspeed * Math.sin(ships[z].totalangle);
+                        ships[z].y += ships[z].speedmult * ships[z].totalspeed * Math.cos(ships[z].totalangle);
                     }else{
-                        timeoutmax = 2 * ships[z].totalspeed;
+                        timeoutmax = 2000;
                         if (ships[z].totalspeed==0){
                         }else{
                             if (ships[z].totalspeed<0){
@@ -204,8 +204,8 @@ function shipnewPos(z) {
                             }
                         }
                         colliding = true;
-                        xmove = ships[z].totalspeed * Math.sin(ships[z].angle);
-                        ymove = ships[z].speed * Math.cos(ships[z].angle);
+                        xmove = ships[z].mX;
+                        ymove = ships[z].mY;
                         timeout = 0;
                         while (colliding){
                             ourcorners = shipcorners(z);
@@ -221,6 +221,20 @@ function shipnewPos(z) {
                     }
                     
                 }
+                // for(v=0; v<planets.length;v++){
+                    
+                //     let distance = Math.hypot(planets[v].x-ourcorners[i].x,planets[v].y-ourcorners[i].y);
+                //     let direction = Math.atan2(planets[v].y-ships[z].y,planets[v].x-ships[z].x)-1.5708;
+                //     if(distance<=planets[v].r){
+                //         xmove = ships[z].totalspeed * Math.sin(ships[z].totalangle)*ships[z].speedmult;
+                //         ymove = ships[z].totalspeed * Math.cos(ships[z].totalangle)*ships[z].speedmult;
+                //         ships[z].x += ships[z].x - ourcorners[i].x;
+                //         ships[z].y += ships[z].y - ourcorners[i].y;
+
+                //     }
+
+                    
+                // }
             }
         }
     }      
