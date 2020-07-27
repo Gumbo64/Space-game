@@ -1,54 +1,5 @@
 
 // const { render } = require("nunjucks");
-(function(){
-
-    function init(){
-        var canvas = document.getElementsByTagName('canvas')[0];
-        var c = canvas.getContext('2d');
-
-        var img = document.getElementById('background')
-        var velocity = 1000; //400pixels/second
-        var distance =0;
-        var lastFrameRepaintTime =0;
-
-        function calcOffset(time){
-            var frameGapTime = time - lastFrameRepaintTime;
-            lastFrameRepaintTime = time;
-            var translateX = velocity*(frameGapTime/1000);
-            return translateX;
-        }
-        function draw(time){
-            clientshipx=ships[clientname].x;
-            clientshipy=ships[clientname].y;
-            distance =distance % img.width
-            // if(distance > img.width){distance =distance % img.width ;}
-            widthmodulo =Math.abs((clientshipx) % canvas.width);
-            heightmodulo = Math.abs((clientshipy) % canvas.height);
-            c.clearRect(0,0,canvas.width,canvas.height);
-            c.save();
-            c.translate(widthmodulo,0);
-            c.drawImage(img,0,0);
-            c.drawImage(img,-img.width+1,0);
-
-            requestAnimationFrame(draw);
-
-
-            c.restore();
-        }
-        function start(){
-            lastFrameRepaintTime = window.performance.now();
-            requestAnimationFrame(draw);
-        }
-
-        start();
-
-
-    }
-
-//invoke function init once document is fully loaded
-    // window.addEventListener('load',init,false);
-
-}()); //self invoking function
 
 port = ipadress + ":1569";
 const socket = io(port)
@@ -215,23 +166,28 @@ function scaledraw(x,y,width,height,angle,img){
 }
 
 function wiper() {
+    
     var ctx = gamearea.context;
     height = 0;
     width = 0;
     var shipimg = document.getElementById('client');
     ctx.setTransform(1, 0, 0, 1, 0, 0); // sets scale && origin
     ctx.drawImage(shipimg, width / -2, height / -2, width, height);
+    
 }
 
+function clearrect(){
+    var ctx = gamearea.context;
+    canvas = gamearea.canvas
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+}
 function oldbackground() {
     var ctx = gamearea.context;
-    height = (10000);
-    width = (10000);
+    height = (10000 + 1000);
+    width = (10000 + 1100);
     var shipimg = document.getElementById('background');
-    let w = Math.ceil(width/(shipimg.width*(scale/100)));
-    let h = Math.ceil(height/(shipimg.height*(scale/100)));
-    for (i=-w;i<w;i++){
-        for (j=-h;j<h;j++){
+    for (i=0;i<Math.ceil(width/(shipimg.width*(scale/100)));i++){
+        for (j=0;j<Math.ceil(height/(shipimg.height*(scale/100)));j++){
             ctx.setTransform(1, 0, 0, 1, (scale/100)*(i*shipimg.width-clientshipx), (scale/100)*(j*shipimg.height-clientshipy)); // sets scale && origin
             ctx.drawImage(shipimg,0, 0, shipimg.width*(scale/100),shipimg.height*(scale/100));
         }
@@ -240,10 +196,10 @@ function oldbackground() {
 function background() {
     var ctx = gamearea.context;
     var shipimg = document.getElementById('background');
-    static = true;
+    static = false;
     if (static){
-        height = centerx*5;
-        width = centerx*5;
+        height = centery*20;
+        width = centerx*20;
         // height = 10000;
         // width = 10000;
         widthmodulo = 0;
@@ -251,7 +207,7 @@ function background() {
         for (i=0;i<Math.ceil(width/(shipimg.width*(scale/100)))+1;i++){
             for (j=0;j<Math.ceil(height/(shipimg.height*(scale/100))+1);j++){
                 ctx.setTransform(1, 0, 0, 1, (scale/100)*shipimg.width, (scale/100)*shipimg.height); // sets scale && origin
-                ctx.drawImage(shipimg,0, 0, shipimg.width*(scale/100),shipimg.height*(scale/100));
+                ctx.drawImage(shipimg,0, 0, shipimg.width*(scale/100)/-1,shipimg.height*(scale/100)/-1);
             }
         }
     }else{
@@ -299,13 +255,12 @@ function momentumarrow(){
 
 }
 function rendergamearea(){
+    wiper();
+    clearrect();
     clientshipx=ships[clientname].x;
     clientshipy=ships[clientname].y;
-    // gamearea.clear();
-    var ctx = gamearea.context;
-    canvas = gamearea.canvas
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    // background();
+    gamearea.clear();
+    background();
     // oldbackground();
     for (var key in ships) {
         // check if the property/key is defined in the object itself, not in parent
@@ -322,13 +277,13 @@ function rendergamearea(){
     }
     shipdraw(clientname);
     drawhealthname(clientname);
-    // wiper();
+    wiper();
     for (i=0;i<planets.length;i++){
         planetdraw(planets[i]);
     }
-
+    
     momentumarrow();
-    wiper();
+    
     
 }
 
@@ -504,4 +459,3 @@ function fullscreen(){
         el.mozRequestFullScreen();
     }            
 }
-
