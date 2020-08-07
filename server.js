@@ -26,8 +26,7 @@ nunjucks.configure( '.', {
 inputs = {};
 ships = {};
 structures = {};
-planets = [{'x':1000,'y':1000,'m':20,'r':500},
-           {'x':2000,'y':1000,'m':5,'r':200}];
+planets = [{'x':1000,'y':1000,'m':20,'r':50}];
 // bullets = {};
 
 // gamearea = {};
@@ -68,6 +67,7 @@ io.on('connection', socket => {
       }
       delete ships[socket.id];
       delete bullets[socket.id];
+      delete structures[socket.id];
       console.log(ships[socket.id].username,' disconnected')
     
     }catch(err){
