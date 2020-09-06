@@ -213,21 +213,37 @@ function background() {
         }
     }else{
         canvasWidth = gamearea.canvas.width;
+        canvasHeight = gamearea.canvas.height;
         scrollImg = shipimg;
         imgHeight = shipimg.height
         imgWidth = shipimg.width
 
         // Horizontal scrolling
         if (clientshipx > 0){
-            scrollVal= canvasWidth - (Math.abs(clientshipx) % canvasWidth); 
+            sidescroll= canvasWidth - (Math.abs(clientshipx) % canvasWidth); 
         }else{
-            scrollVal= (Math.abs(clientshipx) % canvasWidth); 
+            sidescroll= (Math.abs(clientshipx) % canvasWidth); 
+        }
+        // Vertical scrolling
+        if (clientshipy > 0){
+            vertscroll= canvasHeight - (Math.abs(clientshipy) % canvasHeight); 
+        }else{
+            vertscroll= (Math.abs(clientshipy) % canvasHeight); 
         }
              
-        // on left
-        ctx.drawImage(scrollImg,canvasWidth-scrollVal,0,scrollVal,imgHeight, 0, 0, scrollVal,imgHeight);
-        // on right
-        ctx.drawImage(scrollImg,scrollVal,0,imgWidth, imgHeight);
+        
+        // ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+        // Top left
+        ctx.drawImage(scrollImg,canvasWidth-sidescroll,canvasHeight-vertscroll,sidescroll,vertscroll, 0, 0, sidescroll,vertscroll);
+
+
+        // ctx.drawImage(scrollImg,sidescroll+,canvasHeight-vertscroll,sidescroll,vertscroll, 0, 0, sidescroll,vertscroll);
+        
+        // Bottom right
+        ctx.drawImage(scrollImg,sidescroll,vertscroll,imgWidth, imgHeight);
+
+        
+        // ctx.drawImage(scrollImg,canvasWidth - sidescroll,canvasHeight-vertscroll,imgWidth, imgHeight);
     }
 }
 function momentumarrow(){
