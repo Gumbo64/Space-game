@@ -193,6 +193,7 @@ function oldbackground() {
         }
     }
 }
+scrollVal = 0;
 function background() {
     var ctx = gamearea.context;
     var shipimg = document.getElementById('background');
@@ -211,28 +212,22 @@ function background() {
             }
         }
     }else{
-        height = centery*6;
-        width = centerx*6;
-        // height = 10000;
-        // width = 10000;
-        if (clientshipx<0){
-            widthc = -1;
+        canvasWidth = gamearea.canvas.width;
+        scrollImg = shipimg;
+        imgHeight = shipimg.height
+        imgWidth = shipimg.width
+
+        // Horizontal scrolling
+        if (clientshipx > 0){
+            scrollVal= canvasWidth - (Math.abs(clientshipx) % canvasWidth); 
         }else{
-            widthc = 1;
+            scrollVal= (Math.abs(clientshipx) % canvasWidth); 
         }
-        if (clientshipy<0){
-            heightc = -1;
-        }else{
-            heightc=1;
-        }
-        widthmodulo =Math.abs((clientshipx) % width);
-        heightmodulo = Math.abs((clientshipy) % height);
-        for (i=-1;i<Math.abs(width/(shipimg.width*(scale/100)));i++){
-            for (j=-1;j<Math.abs(height/(shipimg.height*(scale/100)));j++){
-                ctx.setTransform(1, 0, 0, 1, (scale/100)*((i-1)*shipimg.width-widthmodulo*widthc), (scale/100)*((j-1)*shipimg.height-heightmodulo * heightc)); // sets scale && origin
-                ctx.drawImage(shipimg,0, 0, shipimg.width*(scale/100)/-1,shipimg.height*(scale/100)/-1);
-            }
-        }
+             
+        // on left
+        ctx.drawImage(scrollImg,canvasWidth-scrollVal,0,scrollVal,imgHeight, 0, 0, scrollVal,imgHeight);
+        // on right
+        ctx.drawImage(scrollImg,scrollVal,0,imgWidth, imgHeight);
     }
 }
 function momentumarrow(){
