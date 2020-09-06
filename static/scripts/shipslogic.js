@@ -5,7 +5,6 @@ gameheight= 10000;
 gamearea.canvas.width = gamewidth;
 gamearea.canvas.height = gameheight;
 const frictioncollision=false;
-const maxradian = 360 * Math.PI/180;
 function shipshoot(z) {
     if (Date.now() - ships[z].lastshoot >= ships[z].firerate){
         append = new bullet(ships[z].bulletwidth,ships[z].bulletheight,ships[z].x,ships[z].y,ships[z].angle,ships[z].bulletspeed,ships[z].colour);

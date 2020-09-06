@@ -220,27 +220,27 @@ function background() {
 
         // Horizontal scrolling
         if (clientshipx > 0){
-            sidescroll= canvasWidth - (Math.abs(clientshipx) % canvasWidth); 
+            sidescroll= canvasWidth - (Math.abs(clientshipx*scale/100) % canvasWidth); 
         }else{
-            sidescroll= (Math.abs(clientshipx) % canvasWidth); 
+            sidescroll= (Math.abs(clientshipx*scale/100) % canvasWidth); 
         }
         // Vertical scrolling
         if (clientshipy > 0){
-            vertscroll= canvasHeight - (Math.abs(clientshipy) % canvasHeight); 
+            vertscroll= canvasHeight - (Math.abs(clientshipy*scale/100) % canvasHeight); 
         }else{
-            vertscroll= (Math.abs(clientshipy) % canvasHeight); 
+            vertscroll= (Math.abs(clientshipy*scale/100) % canvasHeight); 
         }
              
         
-        // ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-        // Top left
-        ctx.drawImage(scrollImg,canvasWidth-sidescroll,canvasHeight-vertscroll,sidescroll,vertscroll, 0, 0, sidescroll,vertscroll);
-
-
-        // ctx.drawImage(scrollImg,sidescroll+,canvasHeight-vertscroll,sidescroll,vertscroll, 0, 0, sidescroll,vertscroll);
         
+        // Top left
+        ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll - canvasWidth,canvasWidth, canvasWidth);
+        // Top right
+        ctx.drawImage(scrollImg,sidescroll ,vertscroll - canvasWidth,canvasWidth, canvasWidth);
+        // Bottom left
+        ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll ,canvasWidth, canvasWidth);
         // Bottom right
-        ctx.drawImage(scrollImg,sidescroll,vertscroll,imgWidth, imgHeight);
+        ctx.drawImage(scrollImg,sidescroll,vertscroll,canvasWidth, canvasWidth);
 
         
         // ctx.drawImage(scrollImg,canvasWidth - sidescroll,canvasHeight-vertscroll,imgWidth, imgHeight);
