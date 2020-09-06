@@ -41,6 +41,8 @@ app.use('/static', express.static('static'))
 function truncate(str, n){
   return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
 };
+
+
 io.on('connection', socket => {
   socket.on('new-user', (username,structure) => {
     
@@ -49,7 +51,6 @@ io.on('connection', socket => {
     handleNew(socket.id,username,structure);
   })
   socket.on('staterequest', (inputis) => {
-    socket.emit('states',ships,structures);
     try {
       ships[socket.id].input=inputis; 
     } catch (error) {
@@ -110,8 +111,14 @@ if (multithreading){
   a();
 
 }else{
-  setInterval(shipslogic.updateGameArea, tickrate);
+  setInterval(intervalloop, tickrate);
 }
+
+function intervalloop(){
+  shipslogic.updateGameArea()
+  io.emit('states',ships,structures);
+}
+
 function threadsend(){
   return new Promise((resolve) => {
     (async () => {
