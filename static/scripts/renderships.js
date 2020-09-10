@@ -71,8 +71,29 @@ function getstates(){
     if (gamearea.keys && gamearea.keys[87]) {up = true;}
     if (gamearea.keys && gamearea.keys[83]) {down = true; }
     if (gamearea.keys && gamearea.keys[32]){shoot=true;}
+    if (gamearea.keys && gamearea.keys[80]){
+        if (lastpresstime(80)){
+            staticbackground=!staticbackground;
+        }
+        heldlastmanage(80,true);
+    }else{heldlastmanage(80,false);}
+    // console.log(gamearea.keys)
     inputs = [left,right,up,down,shoot];
     socket.emit('staterequest',inputs);
+}
+
+heldlast = {};
+function heldlastmanage(button,newbool){
+    if (!heldlast[button]){
+        heldlast[button]=false;
+    }
+    heldlast[button] = newbool;
+}
+function lastpresstime(button){
+    if (heldlast[button]==false){
+        return true;
+    }
+    return false;
 }
 socket.on('states', (shipsstate,newstructures) => {
     ships = shipsstate;
@@ -101,9 +122,9 @@ function renderonebullet(bullet){
 
 function planetdraw(planet){
     var context = gamearea.context;
-    var x = (planet.x-clientshipx)*(scale/100)+centerx;
-    var y = (planet.y-clientshipy)*(scale/100)+centery;
-    var radius = planet.r * scale/100;
+    var x = (planet.x-clientshipx)/(scale/100)+centerx;
+    var y = (planet.y-clientshipy)/(scale/100)+centery;
+    var radius = planet.r / (scale/100);
     // context.rotate(ships[clientname].totalangle);
     context.beginPath();
     context.arc(x, y, radius, 0, 2 * Math.PI, false);
@@ -160,9 +181,9 @@ function scaledraw(x,y,width,height,angle,img){
     var ctx = gamearea.context;
     img.width=width;
     img.height=height;
-    ctx.setTransform(1, 0, 0, 1, (x-clientshipx)*(scale/100)+centerx, (y-clientshipy)*(scale/100)+centery); // sets scale && origin
+    ctx.setTransform(1, 0, 0, 1, (x-clientshipx)/(scale/100)+centerx, (y-clientshipy)/(scale/100)+centery); // sets scale && origin
     ctx.rotate(angle);
-    ctx.drawImage(img, width*(scale/100) / -2, height*(scale/100) / -2, width*(scale/100), height*(scale/100));
+    ctx.drawImage(img, width/(scale/100) / -2, height/(scale/100) / -2, width/(scale/100), height/(scale/100));
 }
 
 function wiper() {
@@ -186,65 +207,53 @@ function oldbackground() {
     height = (10000 + 1000);
     width = (10000 + 1100);
     var shipimg = document.getElementById('background');
-    for (i=0;i<Math.ceil(width/(shipimg.width*(scale/100)));i++){
-        for (j=0;j<Math.ceil(height/(shipimg.height*(scale/100)));j++){
-            ctx.setTransform(1, 0, 0, 1, (scale/100)*(i*shipimg.width-clientshipx), (scale/100)*(j*shipimg.height-clientshipy)); // sets scale && origin
-            ctx.drawImage(shipimg,0, 0, shipimg.width*(scale/100),shipimg.height*(scale/100));
+    for (i=0;i<Math.ceil(width/(shipimg.width/(scale/100)));i++){
+        for (j=0;j<Math.ceil(height/(shipimg.height/(scale/100)));j++){
+            ctx.setTransform(1, 0, 0, 1, (i*shipimg.width-clientshipx)/(scale/100), (j*shipimg.height-clientshipy)/(scale/100)); // sets scale && origin
+            ctx.drawImage(shipimg,0, 0, shipimg.width/(scale/100),shipimg.height/(scale/100));
         }
     }
 }
-scrollVal = 0;
+staticbackground=false;
 function background() {
     var ctx = gamearea.context;
     var shipimg = document.getElementById('background');
-    static = false;
-    if (static){
-        height = centery*20;
-        width = centerx*20;
-        // height = 10000;
-        // width = 10000;
-        widthmodulo = 0;
-        heightmodulo = 0;
-        for (i=0;i<Math.ceil(width/(shipimg.width*(scale/100)))+1;i++){
-            for (j=0;j<Math.ceil(height/(shipimg.height*(scale/100))+1);j++){
-                ctx.setTransform(1, 0, 0, 1, (scale/100)*shipimg.width, (scale/100)*shipimg.height); // sets scale && origin
-                ctx.drawImage(shipimg,0, 0, shipimg.width*(scale/100)/-1,shipimg.height*(scale/100)/-1);
-            }
-        }
+    canvasWidth = gamearea.canvas.width;
+    canvasHeight = gamearea.canvas.height;
+    scrollImg = shipimg;
+    imgHeight = shipimg.height
+    imgWidth = shipimg.width
+
+    // Horizontal scrolling
+    if (clientshipx > 0){
+        sidescroll= canvasWidth - (Math.abs(clientshipx/(scale/100)) % canvasWidth); 
     }else{
-        canvasWidth = gamearea.canvas.width;
-        canvasHeight = gamearea.canvas.height;
-        scrollImg = shipimg;
-        imgHeight = shipimg.height
-        imgWidth = shipimg.width
-
-        // Horizontal scrolling
-        if (clientshipx > 0){
-            sidescroll= canvasWidth - (Math.abs(clientshipx*scale/100) % canvasWidth); 
-        }else{
-            sidescroll= (Math.abs(clientshipx*scale/100) % canvasWidth); 
-        }
-        // Vertical scrolling
-        if (clientshipy > 0){
-            vertscroll= canvasHeight - (Math.abs(clientshipy*scale/100) % canvasHeight); 
-        }else{
-            vertscroll= (Math.abs(clientshipy*scale/100) % canvasHeight); 
-        }
-             
-        
-        
-        // Top left
-        ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll - canvasWidth,canvasWidth, canvasWidth);
-        // Top right
-        ctx.drawImage(scrollImg,sidescroll ,vertscroll - canvasWidth,canvasWidth, canvasWidth);
-        // Bottom left
-        ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll ,canvasWidth, canvasWidth);
-        // Bottom right
-        ctx.drawImage(scrollImg,sidescroll,vertscroll,canvasWidth, canvasWidth);
-
-        
-        // ctx.drawImage(scrollImg,canvasWidth - sidescroll,canvasHeight-vertscroll,imgWidth, imgHeight);
+        sidescroll= (Math.abs(clientshipx*(scale/100)) % canvasWidth); 
     }
+    // Vertical scrolling
+    if (clientshipy > 0){
+        vertscroll= canvasHeight - (Math.abs(clientshipy/(scale/100)) % canvasHeight); 
+    }else{
+        vertscroll= (Math.abs(clientshipy/(scale/100)) % canvasHeight); 
+    }
+            
+    if(staticbackground){
+        vertscroll=0;
+        sidescroll=0;
+    }
+    
+    // Top left
+    ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll - canvasWidth,canvasWidth, canvasWidth);
+    // Top right
+    ctx.drawImage(scrollImg,sidescroll ,vertscroll - canvasWidth,canvasWidth, canvasWidth);
+    // Bottom left
+    ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll ,canvasWidth, canvasWidth);
+    // Bottom right
+    ctx.drawImage(scrollImg,sidescroll,vertscroll,canvasWidth, canvasWidth);
+
+    
+    // ctx.drawImage(scrollImg,canvasWidth - sidescroll,canvasHeight-vertscroll,imgWidth, imgHeight);
+    
 }
 function momentumarrow(){
     arrowangle =  Math.atan2(-ships[clientname].mY, ships[clientname].mX);
@@ -357,8 +366,14 @@ function startGame() {
     for (i=-range;i<range+1;i++){
         structure[i] = {};
         for (j=-range;j<range+1;j++){
-            structure[i][j]=document.getElementsByClassName("x"+i+" y"+j)[0].value;
-            console.log(structure[i][j]);
+            if(document.getElementsByClassName("x"+i+" y"+j)[0].value!='none'){
+                structure[i][j]=document.getElementsByClassName("x"+i+" y"+j)[0].value;
+                console.log(structure[i][j]);
+            }
+            
+        }
+        if(Object.getOwnPropertyNames(structure[i]).length == 0){
+            delete structure[i]
         }
     }
     // structure
@@ -451,9 +466,9 @@ function drawhealthname(z){
     // ctx.fillText(ships[z].username+': '+ships[z].health+'hp',ships[z].x*(scale/100),ships[z].y*(scale/100)-100);
     if(ships[clientname].health<=0){
         ctx.fillStyle = "black";
-        ctx.fillText('You died',0,-50*(scale/100));
+        ctx.fillText('You died',0,-50/(scale/100));
     }else{
-        ctx.fillText(ships[z].username+': '+ships[z].health+'hp',0,-50*(scale/100));
+        ctx.fillText(ships[z].username,0,-50/(scale/100));
     }
     
     
