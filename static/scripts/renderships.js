@@ -160,16 +160,19 @@ function rotate(cx, cy, x, y, angle) {
 function shipdraw(key){
     st = structures[key];
     ship = ships[key];
+    height = 80
+    width = 80
     for (var x in st) {
         if (st.hasOwnProperty(x)) {  
             for (var y in st[x]) {
                 if (st[x].hasOwnProperty(y)) {  
                     if (typeof st[0][0] !== 'undefined' && st[x][y]!='none'){
-                        ans = rotate(ship.x,ship.y,ship.x + x * ship.width,ship.y - y * ship.height,-ship.totalangle)
+                        ans = rotate(ship.x,ship.y,ship.x + x * width,ship.y - y * height,-ship.angle)
                         partx = ans[0];
                         party = ans[1];
                         shipimage = document.getElementById(structures[ship.colour][x][y]);
-                        scaledraw(partx,party,ship.width,ship.height,ship.totalangle,shipimage);
+                        scaledraw(partx,party,width,height,ship.angle,shipimage);
+                        // scaledraw(partx,party,ship.width,ship.height,ship.angle,shipimage);
                     }
                 }
             }   
@@ -247,7 +250,7 @@ function background() {
     
 }
 function momentumarrow(){
-    arrowangle =  Math.atan2(-ships[clientname].mY, ships[clientname].mX);
+    arrowangle =  Math.atan2(ships[clientname].mY, ships[clientname].mX);
     arrowangle = arrowangle + 1.5708;
     // console.log(arrowangle);
     arrowx = centerx;
@@ -265,6 +268,28 @@ function momentumarrow(){
     ctx.drawImage(img, width / -2,height / -2, width,height);
 
 }
+function directionarrow(){
+    movex= Math.sin(ships[clientname].angle)*0.01;
+    movey = Math.cos(ships[clientname].angle)*0.01;
+    arrowangle =  Math.atan2(-movey, movex)+ 1.5708;
+    // console.log(arrowangle);
+    arrowx = centerx;
+    arrowy = centery;
+    var ctx = gamearea.context;
+    img = document.getElementById('uparrow')
+    // console.log(arrowx)
+    arrowx += 100 * Math.sin(arrowangle);
+    arrowy -= 100 * Math.cos(arrowangle);
+    // console.log(arrowx)
+    ctx.setTransform(1, 0, 0, 1, arrowx, arrowy); // sets scale && origin
+    ctx.rotate(arrowangle);
+    width = 80;
+    height = 100;
+    ctx.drawImage(img, width / -2,height / -2, width,height);
+
+}
+
+
 function rendergamearea(){
     wiper();
     clearrect();
@@ -293,6 +318,7 @@ function rendergamearea(){
     }
     
     momentumarrow();
+    directionarrow();
     
     
 }

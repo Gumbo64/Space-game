@@ -1,89 +1,7 @@
 gamearea = {};
-gamearea['canvas']={};
-gamewidth = 10000;
-gameheight= 10000;
-gamearea.canvas.width = gamewidth;
-gamearea.canvas.height = gameheight;
-const frictioncollision=false;
-function shipshoot(z) {
-    if (Date.now() - ships[z].lastshoot >= ships[z].firerate){
-        append = new bullet(ships[z].bulletwidth,ships[z].bulletheight,ships[z].x,ships[z].y,ships[z].angle,ships[z].bulletspeed,ships[z].colour);
-        bullets[z].push(append);
-        ships[z].lastshoot=Date.now();
-    }
-}
-function shipcorners(z){
-    return findcorners(ships[z].x,ships[z].y,ships[z].totalangle,ships[z].width,ships[z].height);
-}
-function bulletcorners(z,c){
-    return findcorners(bullets[z][c].x,bullets[z][c].y,bullets[z][c].angle,bullets[z][c].width,bullets[z][c].height);
-}
-function shipothercorners(p){
-    let othercorners = [];
-    for (var i in ships) {
-        // check if the property/key is defined in the object itself, not in parent
-        if (ships.hasOwnProperty(i)) {   
-            // console.log(ships);
-            // console.log(i)
-            if ((p != i) && (ships[i].health > 0)){
-                let append = shipcorners(i);
-                append.push(i)
-                othercorners.push(append);
-            }
-        }
-    }
-    return othercorners;
-}
-
-    
-function bulletnewPos(z,c,othercorners) {
-    bullets[z][c].x +=  bullets[z][c].speed * Math.sin(bullets[z][c].angle);
-    bullets[z][c].y -=  bullets[z][c].speed * Math.cos(bullets[z][c].angle);
-    var ourcorners = bulletcorners(z,c);
-    var othercorners = othercorners;
-    var i;
-    var nexti;
-    for (i = 0; i < ourcorners.length; i++) {
-        var j;
-        for (j=0;j<othercorners.length;j++){
-            var k;
-            for (k=0;k<othercorners[j].length-1;k++){
-                if (k==3){
-                    nextk = 0;
-                }else{
-                    nextk=k+1;
-                }
-                if (i==3){
-                    nexti=0;
-                }else{
-                    nexti=i+1;
-                }
-                if (doIntersect(ourcorners[i],ourcorners[nexti],othercorners[j][k],othercorners[j][nextk])){
-                    for (var p in ships) {
-                        // check if the property/key is defined in the object itself, not in parent
-                        if (ships.hasOwnProperty(p)) {           
-                            if (ships[p].colour == othercorners[j][4]){
-                                console.log('hit')
-                                ships[p].health += -0.5;
-                            }
-                        }
-                    }
-                    bullets[z][c].x = -9999999999;
-                    bullets[z][c].y = -9999999999;
-                    bullets[z][c].angle = 0;                  
-                }
-            }
-        }
-    }      
-}
-
+const Matter = require('matter-js');
 
 function shipnewPos(z) {
-    if (ships[z].health <= 0){
-        ships[z].x = -99999999;
-        ships[z].y = -99999999;
-        return 'ded';
-    }
     actions = ships[z].input;
     left = actions[0];
     right=actions[1];
@@ -91,177 +9,35 @@ function shipnewPos(z) {
     down=actions[3];
     shoot=actions[4];
 
+    speed = 10
     if (up){
-        ships[z].mX += Math.sin(ships[z].totalangle)*0.01;
-	    ships[z].mY += Math.cos(ships[z].totalangle)*0.01;
+        Matter.Body.setVelocity( ships[z], {x: ships[z].velocity.x+Math.sin(ships[z].angle)*speed/100, y: ships[z].velocity.y-Math.cos(ships[z].angle)*speed/100});
+        // console.log(ships[z])
+        
     }
+    anglespeed = 10
     if (left){
-        ships[z].totalangle -= ships[z].moveanglemult * Math.PI / 180;
+        Matter.Body.rotate(ships[z],-anglespeed * Math.PI / 180)
     }else if(right){
-        ships[z].totalangle += ships[z].moveanglemult * Math.PI / 180;
+        Matter.Body.rotate(ships[z],anglespeed * Math.PI / 180)
     }
     if (shoot){
-        ships[z].x = 0;
-        ships[z].y = 0;
-        ships[z].mX = 0;
-        ships[z].mY = 0;
+        ships[z].position.x = 0;
+        ships[z].position.y = 0;
+        ships[z].velocity.x = 0;
+        ships[z].velocity.y = 0;
     }
 
     for (i=0;i<planets.length;i++){
-        let direction = Math.atan2(planets[i].y-ships[z].y,planets[i].x-ships[z].x)+1.5708;
-        // console.log(direction);
-        let distance = Math.hypot(planets[i].x-ships[z].x,planets[i].y-ships[z].y)
-        // console.log(distance)
-        
+        let direction = Math.atan2(planets[i].y-ships[z].position.y,planets[i].x-ships[z].position.x) +1.5708;
+        let distance = Math.hypot(planets[i].x-ships[z].position.x,planets[i].y-ships[z].position.y)
         let force = planets[i].m / (distance^2);
-        // console.log([force,distance,direction]);
         if(isFinite(force) && !isNaN(distance) && !isNaN(direction)){
-            ships[z].mX += Math.sin(direction) * force;
-	        ships[z].mY += Math.cos(direction) * force;
+            Matter.Body.setVelocity(ships[z], {x: ships[z].velocity.x+Math.sin(direction)*force, y: ships[z].velocity.y-Math.cos(direction)*force});
         }
         
     }
     
-    // let slowdownspeed = 0.0006;
-    let slowdownspeed = 0;
-    if(ships[z].mX<0){
-        ships[z].mX+= slowdownspeed;
-        if (ships[z].mX > 0){
-            ships[z].mX = 0;
-        }
-    }
-    if(ships[z].mX>0){
-        ships[z].mX+= -slowdownspeed;
-        if (ships[z].mX < 0){
-            ships[z].mX = 0;
-        }
-    }
-    if(ships[z].mY<0){
-        ships[z].mY+= slowdownspeed;
-        if (ships[z].mY > 0){
-            ships[z].mY = 0;
-        }
-    }
-    if(ships[z].mY>0){
-        ships[z].mY+= -slowdownspeed;
-        if (ships[z].mY < 0){
-            ships[z].mY = 0;
-        }
-    }
-    
-
-    // if(ships[z].totalspeed > ships[z].terminalvelocity){
-    //     ships[z].totalspeed = ships[z].terminalvelocity;
-    // }else{
-    //     if(ships[z].totalspeed < -ships[z].terminalvelocity){
-    //         ships[z].totalspeed= -ships[z].terminalvelocity;
-    //     }
-    // }
-
-
-
-
-    ships[z].x += ships[z].speedmult * ships[z].mX;
-    ships[z].y -= ships[z].speedmult * ships[z].mY;
-    var ourcorners = shipcorners(z);
-    var othercorners = shipothercorners(z);
-    var i;
-    var nexti;
-    /* z for loop checks collision with other ships*/
-    
-    /* for each diagonal on our ship...   */
-    for (i = 0; i < ourcorners.length; i++) {
-        var j;
-        /* for each other ship  */
-        for (j=0;j<othercorners.length;j++){
-            var k;
-            /* for each side on their ship */
-            for (k=0;k<othercorners[j].length-1;k++){
-                if (k==3){
-                    nextk = 0;
-                }else{
-                    nextk=k+1;
-                }
-                if (i==3){
-                    nexti=0;
-                }else{
-                    nexti=i+1;
-                }
-                if (doIntersect(ourcorners[i],ourcorners[nexti],othercorners[j][k],othercorners[j][nextk])){
-                    if (frictioncollision){
-                        ships[z].angle -= ships[z].moveAngle * Math.PI / 180;
-                        ships[z].x -= ships[z].speedmult * ships[z].totalspeed * Math.sin(ships[z].totalangle);
-                        ships[z].y += ships[z].speedmult * ships[z].totalspeed * Math.cos(ships[z].totalangle);
-                    }else{
-                        timeoutmax = 2000;
-                        if (ships[z].totalspeed==0){
-                        }else{
-                            if (ships[z].totalspeed<0){
-                                ships[z].totalspeed = -1;
-                            }else{
-                                ships[z].totalspeed=1;
-                            }
-                        }
-                        colliding = true;
-                        xmove = ships[z].mX;
-                        ymove = ships[z].mY;
-                        timeout = 0;
-                        while (colliding){
-                            ourcorners = shipcorners(z);
-                            othercorners =shipothercorners(z);
-                            ships[z].x -= xmove;
-                            ships[z].y += ymove;
-                            colliding = doIntersect(ourcorners[i],ourcorners[nexti],othercorners[j][k],othercorners[j][nextk]);
-                            timeout++;
-                            if (timeout>100){
-                                colliding = false;
-                            }
-                        }
-                    }
-                    
-                }
-                // for(v=0; v<planets.length;v++){
-                    
-                //     let distance = Math.hypot(planets[v].x-ourcorners[i].x,planets[v].y-ourcorners[i].y);
-                //     let direction = Math.atan2(planets[v].y-ships[z].y,planets[v].x-ships[z].x)-1.5708;
-                //     if(distance<=planets[v].r){
-                //         xmove = ships[z].totalspeed * Math.sin(ships[z].totalangle)*ships[z].speedmult;
-                //         ymove = ships[z].totalspeed * Math.cos(ships[z].totalangle)*ships[z].speedmult;
-                //         ships[z].x += ships[z].x - ourcorners[i].x;
-                //         ships[z].y += ships[z].y - ourcorners[i].y;
-
-                //     }
-
-                    
-                // }
-            }
-        }
-    }      
-    /*
-    Collision with walls at edge of map
-    */
-    // var i;
-    // ships[z].y -= 100;
-    // for (i = 0; i < ourcorners.length; i++) {
-    //     if (ourcorners[i].x > gamearea.canvas.width){
-    //         ships[z].x = gamearea.canvas.width-(ourcorners[i].x-ships[z].x);
-    //         ships[z].mX=0;
-        
-    //     }
-    //     if (ourcorners[i].x < 0) {
-    //         ships[z].x = ships[z].x-ourcorners[i].x;
-    //         ships[z].mX=0;
-    //     }
-    //     if (ourcorners[i].y > gamearea.canvas.height){
-    //         ships[z].y = gamearea.canvas.height-(ourcorners[i].y-ships[z].y);
-    //         ships[z].mY=0;
-    //     }
-    //     if (ourcorners[i].y < 0) {
-    //         ships[z].y = ships[z].y-ourcorners[i].y;
-    //         ships[z].mY=0;
-    //     }
-    
-    // }
     
     
 }
@@ -289,12 +65,12 @@ exports.makeship = function(x, y, colour,username) {
     this.height=50;
     this.width=50;
     this.health=4;
-    this.totalangle = 0;
+    this.angle = 0;
     this.terminalvelocity = 5;
     this.x = x;
     this.y = y;
-    this.mX = 0;
-    this.mY = 0;
+    this.velocity.x = 0;
+    this.velocity.y = 0;
     this.speedmult = 3;
     this.bulletspeed = 5;
     this.moveanglemult = 4;

@@ -4,7 +4,7 @@ const app = express()
 const path = require('path');
 const nunjucks = require('nunjucks');
 const publicIp = require('public-ip');
-const matter = require('matter-js');
+const Matter = require('matter-js');
 // const { Worker, isMainThread, parentPort } = require('worker_threads');
 // (async () => {
 //   ipadress = await publicIp.v4();
@@ -19,6 +19,15 @@ const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 // const { exception } = require('console');
 
 
+var Engine = Matter.Engine,
+    Render = Matter.Render,
+    World = Matter.World,
+    Bodies = Matter.Bodies;
+
+// create an engine
+var engine = Engine.create();
+engine.world.gravity.y = 0;
+
 nunjucks.configure( '.', {
     autoescape: true,
     express: app
@@ -27,7 +36,7 @@ nunjucks.configure( '.', {
 inputs = {};
 ships = {};
 structures = {};
-planets = [{'x':1000,'y':1000,'m':5,'r':500}];
+planets = [{'x':1000,'y':1000,'m':30,'r':500}];
 // bullets = {};
 
 // gamearea = {};
@@ -117,10 +126,19 @@ if (multithreading){
 
 function intervalloop(){
   shipslogic.updateGameArea()
+  Engine.update(engine,tickrate)
+  io.emit('states',parsedships(),structures);
+}
 
-
-
-  io.emit('states',ships,structures);
+function parsedships(){
+  let newships = {};
+  for (var id in ships) {
+    if (ships.hasOwnProperty(id)) {
+      let oldship = ships[id];
+      newships[id]={'input':oldship.input,'x':oldship.position.x, 'y': oldship.position.y, 'angle':oldship.angle, 'mX':oldship.velocity.x,'mY':oldship.velocity.y,'username':oldship.username,'colour':oldship.colour}
+    }
+  }
+  return newships;
 }
 
 function threadsend(){
@@ -176,9 +194,11 @@ function threadreturn(result){
 function handleNew(id,username,structure){
   // ships[id] = new shipslogic.makeship(Math.round(Math.random()*gamewidth),Math.round(Math.random()*gameheight),id,username);
   username = truncate(username,40);
-  ships[id] = new shipslogic.makeship(1000,1000,id,username);
+  ships[id] = Bodies.rectangle(400, 200, 80, 80,{'frictionAir':0, 'colour':id,'username':username,'input':[false,false,false,false,false]});
   structures[id]=structure;
   console.log(username,' joined');
+  World.add(engine.world, [ships[id]]);
+  console.log(ships)
 }
 
 
