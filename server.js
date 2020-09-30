@@ -4,6 +4,7 @@ const app = express()
 const path = require('path');
 const nunjucks = require('nunjucks');
 const publicIp = require('public-ip');
+const matter = require('matter-js');
 // const { Worker, isMainThread, parentPort } = require('worker_threads');
 // (async () => {
 //   ipadress = await publicIp.v4();
@@ -116,6 +117,9 @@ if (multithreading){
 
 function intervalloop(){
   shipslogic.updateGameArea()
+
+
+
   io.emit('states',ships,structures);
 }
 
