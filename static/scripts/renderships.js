@@ -202,18 +202,7 @@ function clearrect(){
     canvas = gamearea.canvas
     ctx.clearRect(0,0,canvas.width,canvas.height);
 }
-function oldbackground() {
-    var ctx = gamearea.context;
-    height = (10000 + 1000);
-    width = (10000 + 1100);
-    var shipimg = document.getElementById('background');
-    for (i=0;i<Math.ceil(width/(shipimg.width/(scale/100)));i++){
-        for (j=0;j<Math.ceil(height/(shipimg.height/(scale/100)));j++){
-            ctx.setTransform(1, 0, 0, 1, (i*shipimg.width-clientshipx)/(scale/100), (j*shipimg.height-clientshipy)/(scale/100)); // sets scale && origin
-            ctx.drawImage(shipimg,0, 0, shipimg.width/(scale/100),shipimg.height/(scale/100));
-        }
-    }
-}
+
 staticbackground=false;
 function background() {
     var ctx = gamearea.context;
@@ -228,8 +217,10 @@ function background() {
     if (clientshipx > 0){
         sidescroll= canvasWidth - (Math.abs(clientshipx/(scale/100)) % canvasWidth); 
     }else{
-        sidescroll= (Math.abs(clientshipx*(scale/100)) % canvasWidth); 
+        sidescroll= (Math.abs(clientshipx/(scale/100)) % canvasWidth); 
     }
+
+
     // Vertical scrolling
     if (clientshipy > 0){
         vertscroll= canvasHeight - (Math.abs(clientshipy/(scale/100)) % canvasHeight); 
@@ -245,7 +236,7 @@ function background() {
     // Top left
     ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll - canvasWidth,canvasWidth, canvasWidth);
     // Top right
-    ctx.drawImage(scrollImg,sidescroll ,vertscroll - canvasWidth,canvasWidth, canvasWidth);
+    ctx.drawImage(scrollImg,sidescroll , vertscroll - canvasWidth,canvasWidth, canvasWidth);
     // Bottom left
     ctx.drawImage(scrollImg,sidescroll - canvasWidth,vertscroll ,canvasWidth, canvasWidth);
     // Bottom right
@@ -281,7 +272,6 @@ function rendergamearea(){
     clientshipy=ships[clientname].y;
     gamearea.clear();
     background();
-    // oldbackground();
     for (var key in ships) {
         // check if the property/key is defined in the object itself, not in parent
         if (ships.hasOwnProperty(key)) {    
@@ -378,7 +368,6 @@ function startGame() {
     }
     // structure
     socket.emit('new-user',username,structure);
-    backgroundcolour = '#ffffff';
     bullets = {};
     ships = {};
     gamearea.stop();
@@ -449,7 +438,6 @@ var gamearea = {
     },    
     clear : function() {
         ctx = this.context;
-        ctx.fillStyle = backgroundcolour;
         ctx.fillRect(0,0, this.canvas.width*5, this.canvas.height*5);
 
     }
