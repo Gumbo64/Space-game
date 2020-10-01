@@ -36,15 +36,14 @@ nunjucks.configure( '.', {
 inputs = {};
 ships = {};
 structures = {};
-planets = [{'x':1000,'y':1000,'m':30,'r':500}];
-// bullets = {};
-
-// gamearea = {};
-// gamearea['canvas']={};
-// gamewidth = 1000;
-// gameheight= 1000;
-// gamearea.canvas.width = gamewidth;
-// gamearea.canvas.height = gameheight;
+manualplanets = [{'x':1000,'y':1000,'r':500},{'x':2000,'y':1000,'r':100}];
+engineplanets = [];
+for (i=0;i<manualplanets.length;i++){
+  let oldplanet = manualplanets[i]
+  engineplanets.push(Matter.Bodies.circle(oldplanet.x,oldplanet.y,oldplanet.r,{'frictionAir':0}))
+  // Matter.Body.setStatic(engineplanets[i], true)
+  World.add(engine.world, engineplanets[i]);
+}
 
 app.set('view engine', 'nunjucks')
 app.use('/static', express.static('static'))
@@ -54,10 +53,9 @@ function truncate(str, n){
 
 
 io.on('connection', socket => {
+
   socket.on('new-user', (username,structure) => {
-    
     socket.emit('identifier',socket.id);
-    socket.emit('planets',planets);
     handleNew(socket.id,username,structure);
   })
   socket.on('staterequest', (inputis) => {
@@ -65,7 +63,6 @@ io.on('connection', socket => {
       ships[socket.id].input=inputis; 
     } catch (error) {
       socket.emit('identifier',socket.id);
-      socket.emit('planets',planets);
       handleNew(socket.id,'unnamed');
     }
     
@@ -94,40 +91,13 @@ app.get('/', function(req, res){
 app.listen(port, function(){
   console.log(`Running at http://localhost:${port}`)
 })
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
-multithreading=false;
-if (multithreading){
-  workerlist = [];
-  userCPUCount = os.cpus().length;
-  for (i=0;i<userCPUCount-2;i++){
-    workerlist.push(new Worker('./multithreading.js'))
-    workerlist[i].on('message',(states)=>{threadreturn(states)})
-    workerlist[i].on('error', function(s){console.log(s)});
-    workerlist[i].on('exit', (code) => {
-      if (code !== 0)
-        console.log(code)
-    });
-  }
-  async function a() {
-    lasttime = Date.now();
-    await threadsend();
-    await sleep(tickrate)
-    a();
-    // console.log(Date.now()-lasttime);
-  }
-  a();
-
-}else{
-  setInterval(intervalloop, tickrate);
-}
-
+setInterval(intervalloop, tickrate);
 function intervalloop(){
   shipslogic.updateGameArea()
   Engine.update(engine,tickrate)
   io.emit('states',parsedships(),structures);
+  io.emit('planets',parsedplanets());
 }
 
 function parsedships(){
@@ -140,55 +110,14 @@ function parsedships(){
   }
   return newships;
 }
+function parsedplanets(){
+  let newplanets = [];
+  for (i=0;i<engineplanets.length;i++) {
+    let oldplanet = engineplanets[i];
+    newplanets.push({'x':oldplanet.position.x, 'y': oldplanet.position.y,'m':oldplanet.m,'r':oldplanet.circleRadius})
 
-function threadsend(){
-  return new Promise((resolve) => {
-    (async () => {
-      let cputotals = [];
-      let cpu = 0
-      let appendit = false;
-      for (var i in ships){
-        if (ships.hasOwnProperty(i)) {
-          if (!appendit){
-            cputotals.push([ships,bullets,i]);
-          }else{
-            cputotals[cpu].push(i);
-          }
-          cpu++;
-          if (cpu>userCPUCount-2){
-            if (!appendit){
-              appendit = true;
-            }
-            cpu=0;
-          }
-        }
-      }
-      await sendstate(cputotals)
-      resolve();
-    })();
-  })
-}
-function sendstate(cputotals){
-  return new Promise((resolve) => {
-    for (i=0;i<cputotals.length;i++){
-      workerlist[i].postMessage(cputotals[i])
-    }
-    resolve()
-  })
-}
-function threadreturn(result){
-  return new Promise((resolve) => {
-    console.log('start',result,'end')
-    for (i=0;i<result.length;i++){
-      // for (j=0;j<result[i].length;j++){
-        let colour = result[i][2];
-        ships[colour] = result[i][0];
-        bullets[colour] = result[i][1];
-      // }
-    }
-    console.log('shipstart',ships,'shipsend')
-    resolve();
-  })
+  }
+  return newplanets;
 }
 
 function handleNew(id,username,structure){
@@ -198,7 +127,7 @@ function handleNew(id,username,structure){
   structures[id]=structure;
   console.log(username,' joined');
   World.add(engine.world, [ships[id]]);
-  console.log(ships)
+
 }
 
 
