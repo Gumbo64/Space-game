@@ -36,7 +36,7 @@ nunjucks.configure( '.', {
 inputs = {};
 ships = {};
 structures = {};
-manualplanets = [{'x':1000,'y':1000,'r':500},{'x':2000,'y':1000,'r':100}];
+manualplanets = [{'x':1000,'y':1000,'r':500},{'x':2000,'y':1000,'r':100},{'x':4000,'y':1000,'r':100},{'x':5000,'y':1000,'r':100},{'x':6000,'y':1000,'r':100}];
 engineplanets = [];
 for (i=0;i<manualplanets.length;i++){
   let oldplanet = manualplanets[i]
