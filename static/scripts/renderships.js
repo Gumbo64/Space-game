@@ -137,15 +137,15 @@ function planetdraw(planet){
 }
 function scrollhandle(delta){
     if(delta>0){
-        scale += 15;
+        scale *= 1.5;
     }else{
-        scale -= 15;
+        scale /= 1.5;
     }
     if (scale<=0){
         scale=10;
     }else{
-        if (scale>500){
-            scale=500;
+        if (scale>1000000000){
+            scale=1000000000;
         }
     }
 }
@@ -477,7 +477,7 @@ function drawhealthname(z){
     ctx.font = "30px Comic Sans MS";
     ctx.fillStyle = "white";
     ctx.textAlign = "center";
-    ctx.rotate(-ships[z].totalangle);
+    ctx.rotate(-ships[z].angle);
     // ctx.fillText(ships[z].username+': '+ships[z].health+'hp',ships[z].x*(scale/100),ships[z].y*(scale/100)-100);
     if(ships[clientname].health<=0){
         ctx.fillStyle = "black";
