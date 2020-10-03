@@ -10,7 +10,7 @@ function shipnewPos(z) {
     down=actions[3];
     shoot=actions[4];
 
-    speed = 30
+    speed = 10
     anglespeed = 10
     fastspeed =100
     if (up){
@@ -26,9 +26,22 @@ function shipnewPos(z) {
         Matter.Body.setAngularVelocity(ships[z],ships[z].angularVelocity+anglespeed/100 * Math.PI / 180)
     }
     if (shoot){
-        Matter.Body.setVelocity( ships[z], {x: ships[z].velocity.x+Math.sin(ships[z].angle)*fastspeed/100, y: ships[z].velocity.y-Math.cos(ships[z].angle)*fastspeed/100});
+        Matter.Body.setPosition(ships[z],{x:0,y:0})
+        Matter.Body.setVelocity(ships[z],{x:0,y:0})
+        Matter.Body.setAngularVelocity(ships[z],0)
+        Matter.Body.setAngle(ships[z],0)
     }
+    maxangular = 0.3;
+    if(ships[z].angularVelocity>maxangular){
+        Matter.Body.setAngularVelocity(ships[z],maxangular)
 
+    }
+    if(ships[z].angularVelocity<-maxangular){
+        Matter.Body.setAngularVelocity(ships[z],-maxangular)
+
+    }
+    // console.log(ships[z].angularVelocity)
+    
     
     
     

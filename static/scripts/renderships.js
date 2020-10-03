@@ -101,7 +101,7 @@ socket.on('states', (shipsstate,newstructures) => {
 })
 socket.on('planets', (newplanets) => {
     planets = newplanets;
-    console.log('gotem')
+    // console.log('gotem')
 })
 
   
