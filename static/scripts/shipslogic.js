@@ -10,7 +10,7 @@ function shipnewPos(z) {
     down=actions[3];
     shoot=actions[4];
 
-    speed = 10
+    speed = 15
     anglespeed = 10
     fastspeed =100
     if (up){
