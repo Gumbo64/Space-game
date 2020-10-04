@@ -24,14 +24,15 @@ const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 
 
 var env,lv_state=[],lv_action,lv_reward,lv_score=0,lv_init='X',f=0,speed=1;
-try {
+// try {
   let rawdata = fs.readFileSync('QTable.json');
   Q_table = JSON.parse(rawdata);
+  // console.log(Q_table)
   
-} catch (error) {
-  console.log('Creating QTable.json')
-  Q_table = {}
-}
+// } catch (error) {
+//   console.log('Creating QTable.json')
+//   Q_table = {}
+// }
 
 gamma = 1;// Future discount
 alpha = 0.7;//Learning rate 0.1
@@ -320,23 +321,17 @@ starttime = Date.now();
 lastsave = Date.now();
 setInterval(intervalloop, tickrate);
 setInterval(saveQTable, 600000);
-async function intervalloop(){
+function intervalloop(){
   console.clear();
   console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago")
   shipslogic.updateGameArea()
   Engine.update(engine,tickrate)
-  io.emit('states',parsedships(),structures);
-  io.emit('planets',parsedplanets());
-  implementreward(lv_state,lv_action);//Reward and learn
-  // console.log('reward implemented')
+  // io.emit('states',parsedships(),structures);
+  // io.emit('planets',parsedplanets());
+  implementreward(lv_state,lv_action);
   lv_state   = getState();
-  // console.log('state found')
   lv_action = getAction(lv_state);
-  // console.log(lv_action)
   implementAction(lv_action)
-  // console.log('action implemented')
-
-  // console.log(Q_table)
 
 
 }
