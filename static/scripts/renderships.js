@@ -98,6 +98,14 @@ function lastpresstime(button){
 socket.on('states', (shipsstate,newstructures) => {
     ships = shipsstate;
     structures = newstructures;
+    try {
+        if(ships[clientname].username=='spectator'){
+            clientname='AI'
+        }
+    } catch (error) {
+        
+    }
+    
 })
 socket.on('planets', (newplanets) => {
     planets = newplanets;

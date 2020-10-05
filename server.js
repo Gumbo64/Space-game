@@ -92,7 +92,9 @@ function logreturn(a){
   return a
 }
 function getAction(state){
-  
+  if(Math.random()<= randprob){
+    return Math.floor(Math.random()*actionSet)
+  }
   var rewardForStay = getQ(state, 0);
   var rewardForJump = getQ(state, 1);
 
@@ -103,17 +105,18 @@ function getAction(state){
     // If reward for Jump is higher, command the flappy bird to jump
     return 1;
   } else {
-      return 0; 
+      return 1; 
   }
 }
 function bestQ(state){
   // console.log(state)
   return bestset(state)[1]
 }
-
-function calculatereward(){
+mindistance = 455;
+steps=0;
+function calculatereward(tag){
   
-  let AIship = ships['AI'];
+  let AIship = ships[tag];
   // console.log(AIship.input)
   let distance = Math.hypot(
         Math.abs(AIship.position.x-1000),
@@ -122,14 +125,25 @@ function calculatereward(){
   let movement = Math.hypot(
     Math.abs(AIship.position.x-AIship.positionPrev.x),
     Math.abs(AIship.position.y-AIship.positionPrev.y))
-  if(distance > 5000 || movement < 0.1 || distance < 538  ){
+
+
+  reward = 1
+  if(mindistance<4500){
+    mindistance += 0.1
+  }
+  steps +=1
+  
+  if(distance > 5000 || distance < mindistance || movement<0.1){
     Matter.Body.setPosition(AIship,{x:1000,y:460})
     Matter.Body.setVelocity(AIship,{x:0,y:0})
     Matter.Body.setAngularVelocity(AIship,0)
     Matter.Body.setAngle(AIship,0)
     // punish too
-    reward = -99999999999999999999;
+    reward = -10000;
+    mindistance=455
+    steps=0
   }
+
   
 
   // reward = 100
@@ -141,13 +155,13 @@ function calculatereward(){
   
 }
 
-function implementreward(s, a){
+function implementreward(s, a,tag){
     var rewardForState=0;
-    var futureState = getState();
+    var futureState = getState(tag);
     
   
   //What is the reward for this step
-  rewardForState = calculatereward()
+  rewardForState = calculatereward(tag)
   
   var optimalFutureValue = Math.max(getQ(futureState, 0), 
   getQ(futureState, 1));
@@ -177,13 +191,13 @@ const modelFitConfig = {              // Exactly the same idea here by using tfj
     stepsPerEpoch: 16
 };
 
-function getState(){
-    let AIship = ships['AI'];
+function getState(tag){
+    let AIship = ships[tag];
     let distance = Math.hypot(
         Math.abs(AIship.position.x-1000),
         Math.abs(AIship.position.y-1000))
     let ShipToPlanetAngle = Math.atan2(
-        Math.abs(-1000),
+        Math.abs(AIship.position.x-1000),
         Math.abs(AIship.position.y-1000))
     let shipangle = AIship.angle % (2*Math.PI)
     // let angledifference = ShipToPlanetAngle - shipangle;
@@ -213,13 +227,13 @@ function implementAction(action){
       break;
   
     case 2:
-      ships['AI'].input = [false,true,true,false,false]
+      ships['AI'].input = [false,false,true,false,false]
       break;
     case 3:
       ships['AI'].input = [true,false,false,false,false]
       break;
     case 4:
-      ships['AI'].input = [true,false,false,false,false]
+      ships['AI'].input = [false,true,false,false,false]
       break;
   
     case 5:
@@ -278,7 +292,7 @@ io.on('connection', socket => {
       ships[socket.id].input=inputis; 
     } catch (error) {
       socket.emit('identifier',socket.id);
-      handleNew(socket.id,'unnamed');
+      handleNew(socket.id,'spectator');
     }
     
   })
@@ -309,9 +323,6 @@ app.listen(port, function(){
 
 
 
-lv_state   = getState();
-
-lv_action = getAction(lv_state); // s is an array of length 3
 
 actionhistory = {}
 
@@ -326,19 +337,26 @@ function actioncount(action){
 
 starttime = Date.now();
 lastsave = Date.now();
+nowtag='AI'
+lv_state   = getState(nowtag);
+lv_action = getAction(lv_state,nowtag); // s is an array of length 3
 setInterval(intervalloop, tickrate);
-// setInterval(saveQTable, 600000);
-setInterval(saveQTable, 600);
+setInterval(saveQTable, 600000);
+// setInterval(saveQTable, 600);
+
+
+
 function intervalloop(){
+  
   console.clear();
-  console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago "+ lv_action + " || "+actionhistory[0] + '  '+actionhistory[1] + "    " +calculatereward())
+  console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago "+ lv_action + " || "+actionhistory[0] + '  '+actionhistory[1] + "    " +steps)
   shipslogic.updateGameArea()
   Engine.update(engine,tickrate)
   io.emit('states',parsedships(),structures);
   io.emit('planets',parsedplanets());
 
-  implementreward(lv_state,lv_action);
-  lv_state   = getState();
+  implementreward(lv_state,lv_action,nowtag);
+  lv_state   = getState(nowtag);
   lv_action = getAction(lv_state);
 
   actioncount(lv_action)
