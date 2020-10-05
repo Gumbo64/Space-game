@@ -24,25 +24,30 @@ const { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } = require('constants');
 
 
 var env,lv_state=[],lv_action,lv_reward,lv_score=0,lv_init='X',f=0,speed=1;
-// try {
+try {
   let rawdata = fs.readFileSync('QTable.json');
   Q_table = JSON.parse(rawdata);
   // console.log(Q_table)
   
-// } catch (error) {
-//   console.log('Creating QTable.json')
-//   Q_table = {}
-// }
+} catch (error) {
+  console.log('Creating QTable.json')
+  Q_table = {}
+}
 
 gamma = 1;// Future discount
 alpha = 0.7;//Learning rate 0.1
 
 
-randprob = 0.3;
+randprob = 0.1;
 tryharddiscount = 1;
 
 s = [];
+
+// actionset = 2 means you get 0 or 1
 actionSet = 2;
+
+
+
 function saveQTable(){
     // convert JSON object to string
   clonetable = Q_table;
@@ -67,6 +72,7 @@ function getQ(s, a){
     config.push(s[i])
   }
   config.push(a)
+  // console.log(config)
   if (!(config in Q_table)) {
      // If there's no entry in the given Q-table for the given state-action
      // pair, return a default reward score as 0
@@ -89,35 +95,33 @@ function setQ(s, a, r){
 }
 function bestset(state){
   let possiblerewards = []
-  let i=0;
-  for (i=0;i<actionSet;i = i + 1){
-    
-    possiblerewards.push([i,getQ(i,state)]);
+  let j=0;
+  for (j=0;j<actionSet;j++){
+    possiblerewards.push([j,getQ(j,state)]);
     // console.log(possiblerewards)
   }
-  // could just make it i<actionSet but then it's harder to understand
   let largestval = possiblerewards[0];
-  for(i=1;i<possiblerewards.length;i++){
-    if (possiblerewards[i][1]>largestval[1]){
-      largestval = possiblerewards[i]
+  for(k=1;k<possiblerewards.length;k++){
+    if (possiblerewards[k][1]>largestval[1]){
+      largestval = possiblerewards[k]
     }
   }
-  // console.log(largestval)
   return largestval
 }
-
+function logreturn(a){
+  console.log(a)
+  return a
+}
 function getAction(s){
-  if(Math.random() <= randprob){
+  if(Math.random() < randprob){
     randprob *= tryharddiscount;
-    return Math.floor(Math.random() * actionSet) + 1
+    return Math.floor(Math.random() * (actionSet))
   }
-  // console.log(randprob)
-  
-
-
+  // console.log(s)
   return bestset(s)[0]
 }
 function bestQ(state){
+  // console.log(state)
   return bestset(state)[1]
 }
 
@@ -128,7 +132,7 @@ function calculatereward(){
   let distance = Math.hypot(
         Math.abs(AIship.position.x-1000),
         Math.abs(AIship.position.y-1000))
-  let reward = (Math.abs(distance) ** 2);
+  let reward = -((distance-1000) ** 2);
   let movement = Math.hypot(
     Math.abs(AIship.position.x-AIship.positionPrev.x),
     Math.abs(AIship.position.y-AIship.positionPrev.y))
@@ -140,7 +144,13 @@ function calculatereward(){
     // punish too
     reward = -99999999999999999999;
   }
-  // console.log(reward)
+  
+
+  reward = 100
+  if(lv_action != lv_state){
+    reward = -99999999999999999999
+  }
+  console.log(reward)
   return reward
   
 }
@@ -194,10 +204,13 @@ function getState(){
     let shipangle = AIship.angle % (2*Math.PI)
     // let angledifference = ShipToPlanetAngle - shipangle;
 
-    distance = Math.round(distance/10)*10;
-    ShipToPlanetAngle = Math.round(ShipToPlanetAngle*20)/20
+    distance = Math.round(distance/20)*20;
+    ShipToPlanetAngle = Math.round(ShipToPlanetAngle*30)/30
+      
     
-    return [distance,ShipToPlanetAngle]
+    // return [distance,ShipToPlanetAngle]
+    console.log('state')
+    return logreturn(Math.floor(Math.random() * (actionSet)))
 }
 function implementAction(action){
   
@@ -316,24 +329,36 @@ lv_state   = getState();
 
 lv_action = getAction(lv_state); // s is an array of length 3
 
+actionhistory = {}
+
+
+function actioncount(action){
+  if(!actionhistory[action]){
+    actionhistory[action]=1
+  }else{
+    actionhistory[action]+=1
+  }
+}
 
 starttime = Date.now();
 lastsave = Date.now();
 setInterval(intervalloop, tickrate);
-setInterval(saveQTable, 600000);
+// setInterval(saveQTable, 600000);
+setInterval(saveQTable, 600);
 function intervalloop(){
   console.clear();
-  console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago")
+  console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago "+ lv_action + " || "+actionhistory[0] + '  '+actionhistory[1])
   shipslogic.updateGameArea()
   Engine.update(engine,tickrate)
-  // io.emit('states',parsedships(),structures);
-  // io.emit('planets',parsedplanets());
+  io.emit('states',parsedships(),structures);
+  io.emit('planets',parsedplanets());
+
   implementreward(lv_state,lv_action);
   lv_state   = getState();
   lv_action = getAction(lv_state);
+
+  actioncount(lv_action)
   implementAction(lv_action)
-
-
 }
 
 function parsedships(){
