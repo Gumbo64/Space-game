@@ -81,44 +81,30 @@ function getQ(s, a){
   return Q_table[config];
 }
 function setQ(s, a, r){
-  var config = [];
-  let i=0;
-  for (i=0;i<s.length;i++){
-    config.push(s[i])
-  }
-  config.push(a)
-  // console.log(config)
-  if (!(config in Q_table)) {
-    Q_table[config] = 0;
-  }
-  Q_table[config] += r;
-}
-function bestset(state){
-  let possiblerewards = []
-  let j=0;
-  for (j=0;j<actionSet;j++){
-    possiblerewards.push([j,getQ(j,state)]);
-    // console.log(possiblerewards)
-  }
-  let largestval = possiblerewards[0];
-  for(k=1;k<possiblerewards.length;k++){
-    if (possiblerewards[k][1]>largestval[1]){
-      largestval = possiblerewards[k]
-    }
-  }
-  return largestval
+  var config = [ s[0], s[1], a];
+      if (!(config in Q_table)) {
+        Q_table[config] = 0;
+      }
+      Q_table[config] += r;
 }
 function logreturn(a){
   console.log(a)
   return a
 }
-function getAction(s){
-  if(Math.random() < randprob){
-    randprob *= tryharddiscount;
-    return Math.floor(Math.random() * (actionSet))
+function getAction(state){
+  
+  var rewardForStay = getQ(state, 0);
+  var rewardForJump = getQ(state, 1);
+
+  if (rewardForStay > rewardForJump) {
+    // If reward for Stay is higher, command the flappy bird to stay
+    return 0;
+  } else if (rewardForStay < rewardForJump) {
+    // If reward for Jump is higher, command the flappy bird to jump
+    return 1;
+  } else {
+      return 0; 
   }
-  // console.log(s)
-  return bestset(s)[0]
 }
 function bestQ(state){
   // console.log(state)
@@ -132,11 +118,11 @@ function calculatereward(){
   let distance = Math.hypot(
         Math.abs(AIship.position.x-1000),
         Math.abs(AIship.position.y-1000))
-  let reward = -((distance-1000) ** 2);
+  let reward = ((distance) ** 2)/1000;
   let movement = Math.hypot(
     Math.abs(AIship.position.x-AIship.positionPrev.x),
     Math.abs(AIship.position.y-AIship.positionPrev.y))
-  if(distance > 5000 || movement < 0.01){
+  if(distance > 5000 || movement < 0.1 || distance < 538  ){
     Matter.Body.setPosition(AIship,{x:1000,y:460})
     Matter.Body.setVelocity(AIship,{x:0,y:0})
     Matter.Body.setAngularVelocity(AIship,0)
@@ -146,11 +132,11 @@ function calculatereward(){
   }
   
 
-  reward = 100
-  if(lv_action != lv_state){
-    reward = -99999999999999999999
-  }
-  console.log(reward)
+  // reward = 100
+  // if(lv_action != lv_state){
+  //   reward = -99999999999999999999
+  // }
+  // console.log(reward)
   return reward
   
 }
@@ -163,13 +149,11 @@ function implementreward(s, a){
   //What is the reward for this step
   rewardForState = calculatereward()
   
-  var optimalFutureValue = bestQ(futureState)
-  // console.log(optimalFutureValue)
+  var optimalFutureValue = Math.max(getQ(futureState, 0), 
+  getQ(futureState, 1));
+var updateValue = alpha*(rewardForState + gamma * optimalFutureValue - getQ(s, a));
 
-
-  var updateValue = alpha*(rewardForState + gamma * optimalFutureValue - getQ(s, a));
-  
-  setQ(s, a, updateValue);
+setQ(s, a, updateValue);
 }    
 
 
@@ -208,9 +192,9 @@ function getState(){
     ShipToPlanetAngle = Math.round(ShipToPlanetAngle*30)/30
       
     
-    // return [distance,ShipToPlanetAngle]
-    console.log('state')
-    return logreturn(Math.floor(Math.random() * (actionSet)))
+    return [distance,ShipToPlanetAngle]
+    // console.log('state')
+    // return logreturn(Math.floor(Math.random() * (actionSet)))
 }
 function implementAction(action){
   
@@ -222,7 +206,7 @@ function implementAction(action){
   // shoot=actions[4];
   switch(action){
     case 0:
-      ships['AI'].input = [false,false,true,false,false]
+      ships['AI'].input = [false,true,true,false,false]
       break;
     case 1:
       ships['AI'].input = [true,false,true,false,false]
@@ -347,7 +331,7 @@ setInterval(intervalloop, tickrate);
 setInterval(saveQTable, 600);
 function intervalloop(){
   console.clear();
-  console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago "+ lv_action + " || "+actionhistory[0] + '  '+actionhistory[1])
+  console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago "+ lv_action + " || "+actionhistory[0] + '  '+actionhistory[1] + "    " +calculatereward())
   shipslogic.updateGameArea()
   Engine.update(engine,tickrate)
   io.emit('states',parsedships(),structures);
@@ -383,15 +367,20 @@ function parsedplanets(){
 
 function handleNew(id,username,structure){
   // ships[id] = new shipslogic.makeship(Math.round(Math.random()*gamewidth),Math.round(Math.random()*gameheight),id,username);
-  username = truncate(username,40);
+  
+  structures[id]=structure;
+  console.log(username,' joined');
+  // username = truncate(username,40);
   ships[id] = Bodies.rectangle(400, 200, 80, 80,{'frictionAir':0, 'colour':id,'username':username,'input':[false,false,false,false,false]});
   if (!structure || Object.keys(structure).length == 0){
     structure = {"0":{"0":'bullet'}};
   }
-  structures[id]=structure;
-  console.log(username,' joined');
-  World.add(engine.world, [ships[id]]);
+  if(username != 'spectator'){
+    
+    World.add(engine.world, [ships[id]]);
 
+  }
+  
 }
 
 

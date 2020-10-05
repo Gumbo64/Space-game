@@ -11,6 +11,16 @@
 <canvas id="flappyCanvas" width="320" height="480"></canvas>
 
 <script>
+actionhistory = {}
+
+
+function actioncount(action){
+  if(!actionhistory[action]){
+    actionhistory[action]=1
+  }else{
+    actionhistory[action]+=1
+  }
+}
 /* 	flappy bird clone for school research thingie
 	Gilles Coremans 2016
 */
@@ -269,6 +279,7 @@ FlappyBird.prototype = {
     return this.s;
   },
   implementAction: function(a){
+    actioncount(a);
       if(a==1){
        inputHandler(1);
       }
@@ -341,7 +352,8 @@ function play(){
     if(started == true){
        lv_state   = env.getState();
        lv_action = env.getAction(lv_state); // s is an array of length 3
-       env.implementAction(lv_action); 
+       env.implementAction(lv_action);
+
     }
     else{
         inputHandler(1);
