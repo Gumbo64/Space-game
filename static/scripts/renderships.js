@@ -6,7 +6,7 @@ const socket = io(port)
 touchcontrols = false;
 touching = false;
 ships = {};
-structures = {};
+
 // bullets = {};
 scale = 70;
 range = 3
@@ -95,9 +95,8 @@ function lastpresstime(button){
     }
     return false;
 }
-socket.on('states', (shipsstate,newstructures) => {
+socket.on('states', (shipsstate) => {
     ships = shipsstate;
-    structures = newstructures;
     try {
         if(ships[clientname].username=='spectator'){
             clientname='AI'
@@ -167,7 +166,7 @@ function rotate(cx, cy, x, y, angle) {
 }
 
 function shipdraw(key){
-    st = structures[key];
+    st = ships[key].structure;
     ship = ships[key];
     height = 80
     width = 80
@@ -179,7 +178,7 @@ function shipdraw(key){
                         ans = rotate(ship.x,ship.y,ship.x + x * width,ship.y - y * height,-ship.angle)
                         partx = ans[0];
                         party = ans[1];
-                        shipimage = document.getElementById(structures[ship.colour][x][y]);
+                        shipimage = document.getElementById(st[x][y]);
                         scaledraw(partx,party,width,height,ship.angle,shipimage);
                         // scaledraw(partx,party,ship.width,ship.height,ship.angle,shipimage);
                     }
@@ -402,7 +401,7 @@ function startGame() {
         }
     }
     // structure
-    socket.emit('new-user',username,structure);
+    socket.emit('new-user',[username,structure]);
     bullets = {};
     ships = {};
     gamearea.stop();

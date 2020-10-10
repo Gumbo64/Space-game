@@ -7,7 +7,6 @@ const path = require('path');
 const nunjucks = require('nunjucks');
 const publicIp = require('public-ip');
 const Matter = require('matter-js');
-const ReImprove = require('reimprovejs')
 // const { Worker, isMainThread, parentPort } = require('worker_threads');
 // (async () => {
 //   ipadress = await publicIp.v4();
@@ -255,7 +254,6 @@ function implementAction(action){
 
 inputs = {};
 ships = {};
-structures = {};
 manualplanets = [{'x':1000,'y':1000,'r':500}];
 // manualplanets = [{'x':1000,'y':1000,'r':500},{'x':2000,'y':1000,'r':100},{'x':4000,'y':1000,'r':100},{'x':5000,'y':1000,'r':100},{'x':6000,'y':1000,'r':100}];
 engineplanets = [];
@@ -268,8 +266,7 @@ for (i=0;i<manualplanets.length;i++){
 }
 
 
-ships['AI'] = Bodies.rectangle(400, 200, 80, 80,{'frictionAir':0, 'colour':'AI','username':'OrbitAI','input':[false,false,false,false,false]});
-structures['AI']={"0":{"0":'bullet'}};
+ships['AI'] = Bodies.rectangle(400, 200, 80, 80,{'frictionAir':0, 'colour':'AI','username':'OrbitAI','input':[false,false,false,false,false],'structure':{"0":{"0":'bullet'}}});
 console.log('OrbitAI',' joined');
 World.add(engine.world, [ships['AI']]);
 
@@ -283,16 +280,17 @@ function truncate(str, n){
 
 io.on('connection', socket => {
 
-  socket.on('new-user', (username,structure) => {
+  socket.on('new-user', (botharray) => {
     socket.emit('identifier',socket.id);
-    handleNew(socket.id,username,structure);
+    handleNew(socket.id,botharray);
   })
   socket.on('staterequest', (inputis) => {
     try {
       ships[socket.id].input=inputis; 
     } catch (error) {
+      console.log('someone joined')
       socket.emit('identifier',socket.id);
-      handleNew(socket.id,'spectator');
+      handleNew(socket.id,['spectator',{}]);
     }
     
   })
@@ -308,7 +306,7 @@ io.on('connection', socket => {
       console.log(ships[socket.id].username,' disconnected')
     
     }catch(err){
-      console.log('error')
+      console.log('someone left')
     }
   })
 })
@@ -348,11 +346,11 @@ setInterval(saveQTable, 600000);
 
 function intervalloop(){
   
-  console.clear();
-  console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago "+ lv_action + " || "+actionhistory[0] + '  '+actionhistory[1] + "    " +steps)
+  // console.clear();
+  // console.log("Uptime: "+ HumanizeDuration(Date.now()-starttime) + " Last save "+HumanizeDuration(Date.now()-lastsave)+" ago "+ lv_action + " || "+actionhistory[0] + '  '+actionhistory[1] + "    " +steps)
   shipslogic.updateGameArea()
   Engine.update(engine,tickrate)
-  io.emit('states',parsedships(),structures);
+  io.emit('states',parsedships());
   io.emit('planets',parsedplanets());
 
   implementreward(lv_state,lv_action,nowtag);
@@ -368,7 +366,7 @@ function parsedships(){
   for (var id in ships) {
     if (ships.hasOwnProperty(id)) {
       let oldship = ships[id];
-      newships[id]={'input':oldship.input,'x':oldship.position.x, 'y': oldship.position.y, 'angle':oldship.angle, 'mX':oldship.velocity.x,'mY':oldship.velocity.y,'username':oldship.username,'colour':oldship.colour}
+      newships[id]={'input':oldship.input,'x':oldship.position.x, 'y': oldship.position.y, 'angle':oldship.angle, 'mX':oldship.velocity.x,'mY':oldship.velocity.y,'username':oldship.username,'colour':oldship.colour,'structure':oldship.structure}
     }
   }
   return newships;
@@ -383,21 +381,23 @@ function parsedplanets(){
   return newplanets;
 }
 
-function handleNew(id,username,structure){
+function handleNew(id,botharray){
   // ships[id] = new shipslogic.makeship(Math.round(Math.random()*gamewidth),Math.round(Math.random()*gameheight),id,username);
-  
-  structures[id]=structure;
+  username = botharray[0]
+  structure = botharray[1]
   console.log(username,' joined');
   // username = truncate(username,40);
-  ships[id] = Bodies.rectangle(400, 200, 80, 80,{'frictionAir':0, 'colour':id,'username':username,'input':[false,false,false,false,false]});
+  
   if (!structure || Object.keys(structure).length == 0){
     structure = {"0":{"0":'bullet'}};
   }
+  ships[id] = Bodies.rectangle(400, 200, 80, 80,{'frictionAir':0,'structure':structure, 'colour':id,'username':username,'input':[false,false,false,false,false]});
   if(username != 'spectator'){
     
     World.add(engine.world, [ships[id]]);
 
   }
+  // console.log(ships)
   
 }
 

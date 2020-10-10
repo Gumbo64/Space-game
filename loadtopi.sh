@@ -1,1 +1,1 @@
-balena login && balena push MinecraftServer --source C:\Users\chick\Desktop\Notetaker
+balena login && balena push MinecraftServer --source E:\Users\Rory\Space-game
