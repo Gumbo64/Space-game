@@ -26,7 +26,7 @@ function shipnewPos(z) {
         Matter.Body.setAngularVelocity(ships[z],ships[z].angularVelocity+anglespeed/100 * Math.PI / 180)
     }
     if (shoot){
-        Matter.Body.setPosition(ships[z],{x:0,y:0})
+        Matter.Body.setPosition(ships[z],{x:1000,y:460})
         Matter.Body.setVelocity(ships[z],{x:0,y:0})
         Matter.Body.setAngularVelocity(ships[z],0)
         Matter.Body.setAngle(ships[z],0)

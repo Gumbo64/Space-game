@@ -66,6 +66,7 @@ function getstates(){
     up=false;
     down=false;
     shoot=false;
+    
     if (gamearea.keys && gamearea.keys[65]) {left = true; }
     if (gamearea.keys && gamearea.keys[68]) {right = true;}
     if (gamearea.keys && gamearea.keys[87]) {up = true;}
@@ -97,13 +98,13 @@ function lastpresstime(button){
 }
 socket.on('states', (shipsstate) => {
     ships = shipsstate;
-    try {
-        if(ships[clientname].username=='spectator'){
-            clientname='AI'
-        }
-    } catch (error) {
+    // try {
+    //     if(ships[clientname].username=='spectator'){
+    //         clientname='AI'
+    //     }
+    // } catch (error) {
         
-    }
+    // }
     
 })
 socket.on('planets', (newplanets) => {

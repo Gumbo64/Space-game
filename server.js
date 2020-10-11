@@ -94,7 +94,7 @@ for (i=0;i<manualplanets.length;i++){
   World.add(engine.world, engineplanets[i]);
 }
 
-console.log('OrbitAI',' joined');
+
 
 app.set('view engine', 'nunjucks')
 app.use('/static', express.static('static'))
@@ -125,13 +125,12 @@ io.on('connection', socket => {
       if (!ships[socket.id].username){
         ships[socket.id].username='unnamed';
       }
-      delete ships[socket.id];
-      delete bullets[socket.id];
-      delete structures[socket.id];
       console.log(ships[socket.id].username,' disconnected')
+      delete ships[socket.id];
+      
     
     }catch(err){
-      console.log('someone left')
+      console.log('already deleted ')
     }
   })
 })
@@ -166,7 +165,8 @@ function parsedships(){
   for (var id in ships) {
     if (ships.hasOwnProperty(id)) {
       let oldship = ships[id];
-      newships[id]={'input':oldship.input,'x':oldship.position.x, 'y': oldship.position.y, 'angle':oldship.angle, 'mX':oldship.velocity.x,'mY':oldship.velocity.y,'username':oldship.username,'colour':oldship.colour,'structure':oldship.structure}
+      newships[id]={'input':oldship.input,'x':oldship.position.x, 'y': oldship.position.y, 'angle':oldship.angle, 'mX':oldship.velocity.x,'mY':oldship.velocity.y, 'mA':oldship.angularSpeed,'username':oldship.username,'colour':oldship.colour,'structure':oldship.structure}
+      // console.log(oldship)
     }
   }
   return newships;
