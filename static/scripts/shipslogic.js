@@ -53,6 +53,7 @@ function gravity(body){
         let direction = Math.atan2(engineplanets[i].position.y-body.position.y,engineplanets[i].position.x-body.position.x) +1.5708;
         let distance = Math.hypot(engineplanets[i].position.x-body.position.x,engineplanets[i].position.y-body.position.y)
         let force = engineplanets[i].m/10 / (distance^2);
+        console.log(engineplanets[i].m)
         // console.log('d')
         if(isFinite(force) && !isNaN(distance) && !isNaN(direction) && (engineplanets[i].position.x != body.position.x && engineplanets[i].position.y != body.position.y)){
             Matter.Body.setVelocity(body, {x: body.velocity.x+Math.sin(direction)*force, y: body.velocity.y-Math.cos(direction)*force});

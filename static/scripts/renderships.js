@@ -189,6 +189,7 @@ function shipdraw(key){
     }
 }
 
+
 function scaledraw(x,y,width,height,angle,img){
     var ctx = gamearea.context;
     img.width=width;
